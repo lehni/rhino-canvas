@@ -1,28 +1,36 @@
+package net.sf.rhinocanvas.js;
+
+import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.Paint;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
 import java.util.Stack;
 
 import org.mozilla.javascript.ScriptableObject;
+import net.sf.css4j.Value;
 
+public class CanvasRenderingContext2D {
 
-public class CanvasRenderingContext2D extends ScriptableObject {
-
-	public CanvasRenderingContext2D() {
-	}
-	
 	Graphics2D graphics;
 	GeneralPath path = new GeneralPath();
 	Stack stack = new Stack();
+	Image image;
+	//private Object fillStyle;
 	
-	void init(Graphics2D graphics){
-		this.graphics = graphics;
+	
+	CanvasRenderingContext2D(Image image) {
+		this.image = image;
+		this.graphics = (Graphics2D) image.image.getGraphics();
 	}
+	
+	
 
 
 	public String getClassName() {
 		
-		return "Context";
+		return "CanvasRenderingContext2D";
 	}
 	
 	
@@ -32,16 +40,25 @@ public class CanvasRenderingContext2D extends ScriptableObject {
 	  // state
 //	 push state on state stack
 	  void jsFunction_save(){
-		  
-		  
+		  stack.push(new ContextState(graphics));  
 	  } 
-	  void jsFunction_restore(){} // pop state stack and restore state
+	  void jsFunction_restore(){
+		  ContextState st = (ContextState) stack.pop();
+		  st.apply(graphics);
+		  
+	  } // pop state stack and restore state
 
 	  // transformations (default transform is the identity matrix)
-	  void jsFunction_scale(float x, float y){}
+	  void jsFunction_scale(float x, float y){
+		  jsFunction_transform(x, 0, 0, y, 0, 0);
+	  }
 	  void jsFunction_rotate(float angle){}
-	  void jsFunction_translate(float x, float y){}
-	  void jsFunction_transform(float m11, float m12, float m21, float m22, float dx, float dy){}
+	  void jsFunction_translate(float x, float y){
+		  jsFunction_transform(1, 0, 0, 1, x, y);
+	  }
+	  void jsFunction_transform(float m11, float m12, float m21, float m22, float dx, float dy){
+		  
+	  }
 	  void jsFunction_setTransform(float m11, float m12, float m21, float m22, float dx, float dy){}
 
 	  /*
@@ -52,6 +69,31 @@ public class CanvasRenderingContext2D extends ScriptableObject {
 	  // colours and styles
 	           attribute DOMObject strokeStyle; // (default black)
 	           attribute DOMObject fillStyle; // (default black)
+	           
+	  */
+	  
+	  private String fillStyle;
+	  
+	  public String getFillStyle(){
+		  return fillStyle;
+	  }
+	  
+	  public void setFillStyle(String fillStyle){
+		  this.fillStyle = fillStyle;
+		  
+		  Value fs = new Value(fillStyle);
+		  
+		  int color = fs.getColor();
+		  
+		  System.out.println("color: "+Integer.toHexString(fs.getColor()));
+		  
+		  graphics.setPaint(new Color(fs.getColor(), true));
+		  
+	  }
+	  
+	  
+	  /*
+	   
 	  CanvasGradient createLinearGradient(float x0, float y0, float x1, float y1);
 	  CanvasGradient createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1);
 	  CanvasPattern createPattern(HTMLImageElement image, DOMString repetition){}
@@ -77,12 +119,21 @@ public class CanvasRenderingContext2D extends ScriptableObject {
 		  
 	  }
 	  
-	  void jsFunction_fillRect(float x, float y, float w, float h){
-		  graphics.fill(new Rectangle2D.Float(x, y, w, h));
+//	  public void jsFunction_fillRect(Object x, Object y, Object w, Object h){
+//		 // graphics.fill(new Rectangle2D.Double(x, y, w, h));
+//	  }
+	  
+	  
+	  public void fillRect(double x, double y, double w, double h){
+		  
+		  graphics.fill(new Rectangle2D.Double(x, y, w, h));
+		  image.dirty();
 	  }
 	  
-	  void jsFunction_strokeRect(float x, float y, float w, float h){
+	  public void strokeRect(float x, float y, float w, float h){
+		  
 		  graphics.draw(new Rectangle2D.Float(x, y, w, h));
+		  image.dirty();
 	  }
 
 	  // path API
@@ -103,13 +154,21 @@ public class CanvasRenderingContext2D extends ScriptableObject {
 		  path.lineTo(x, y);
 	  }
 	  
-	  void jsFunction_quadraticCurveTo(float cpx, float cpy, float x, float y){}
-	  void jsFunction_bezierCurveTo(float cp1x, float cp1y, float cp2x, float cp2y, float x, float y){}
+	  void jsFunction_quadraticCurveTo(float cpx, float cpy, float x, float y){
+		  path.quadTo(cpx, cpy, x, y);
+	  }
+	  void jsFunction_bezierCurveTo(float cp1x, float cp1y, float cp2x, float cp2y, float x, float y){
+		  path.curveTo(cp1x, cp1y, cp2x, cp2y, x, y);
+	  }
 	  void jsFunction_arcTo(float x1, float y1, float x2, float y2, float radius){}
 	  void jsFunction_rect(float x, float y, float w, float h){}
 	  void jsFunction_arc(float x, float y, float radius, float startAngle, float endAngle, boolean anticlockwise){}
-	  void jsFunction_fill(){}
-	  void jsFunction_stroke(){}
+	  void jsFunction_fill(){
+		  graphics.fill(path);
+	  }
+	  void jsFunction_stroke(){
+		  graphics.draw(path);
+	  }
 	  void jsFunction_clip(){}
 	  boolean jsFunction_isPointInPath(float x, float y){
 		return path.contains(x, y);
