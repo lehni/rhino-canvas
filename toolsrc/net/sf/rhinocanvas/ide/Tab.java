@@ -20,6 +20,7 @@ public class Tab {
 	String title;
 	File file;
 	TextArea editor;
+	boolean changed;
 	static int unnamedCount;
 	
 	Tab(File file){
@@ -29,7 +30,7 @@ public class Tab {
 		editor.setLineHighlightEnabled(true);
 		
 		if(file == null){
-			title = "new-"+(++unnamedCount)+".js";
+			title = "scratch-"+(++unnamedCount)+".js";
 		}
 		else{
 			title = file.getName();

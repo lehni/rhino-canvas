@@ -20,12 +20,17 @@ public class CanvasRenderingContext2D {
 	GeneralPath path = new GeneralPath();
 	Stack stack = new Stack();
 	Image image;
-	//private Object fillStyle;
+	Paint fillPaint = Color.BLACK;
+	Paint strokePaint = Color.BLACK;
+	private String fillStyle = "#000";
+	  private String strokeStyle = "#000";
+	  private float globalAlpha = 1.0f;
 	
 	
 	CanvasRenderingContext2D(Image image) {
 		this.image = image;
 		this.graphics = (Graphics2D) image.image.getGraphics();
+		this.graphics.setPaint(Color.BLACK);
 	}
 	
 	
@@ -69,7 +74,6 @@ public class CanvasRenderingContext2D {
 	  /*
 	  // compositing
 	   */
-	  private float globalAlpha = 1.0f;
 	  public float getGlobalAlpha(){
 		  return globalAlpha;
 		  
@@ -81,14 +85,8 @@ public class CanvasRenderingContext2D {
 	  }
 	  
 	  //         attribute DOMString globalCompositeOperation; // (default over)
-
-	  // colours and styles
-//	           attribute DOMObject strokeStyle; // (default black)
-//	           attribute DOMObject fillStyle; // (default black)
-	           
 	
 	  
-	  private String fillStyle;
 	  
 	  public String getFillStyle(){
 		  return fillStyle;
@@ -103,9 +101,23 @@ public class CanvasRenderingContext2D {
 		  
 		  System.out.println("color: "+Integer.toHexString(fs.getColor()));
 		  
-		  graphics.setPaint(new Color(fs.getColor(), true));
+		  fillPaint = new Color(fs.getColor(), true);
 		  
 	  }
+
+	  
+	  public String getStrokeStyle(){
+		  return strokeStyle;
+	  }
+	  
+	  public void setStrokeStyle(String strokeStyle){
+		  this.strokeStyle = strokeStyle;
+		  
+		  Value fs = new Value(strokeStyle);
+		  
+		  strokePaint = new Color(fs.getColor(), true);
+	  }
+
 	  
 	  
 	  /*
@@ -132,7 +144,9 @@ public class CanvasRenderingContext2D {
 	   * 
 	   */
 	  public void clearRect(float x, float y, float w, float h){
-		  	
+		  graphics.setPaint(Color.WHITE);
+		  graphics.fill(new Rectangle2D.Double(x, y, w, h));
+		  image.dirty();
 	  }
 	  
 //	  public public void fillRect(Object x, Object y, Object w, Object h){
@@ -141,13 +155,13 @@ public class CanvasRenderingContext2D {
 	  
 	  
 	  public void fillRect(double x, double y, double w, double h){
-		  
+		  graphics.setPaint(fillPaint);
 		  graphics.fill(new Rectangle2D.Double(x, y, w, h));
 		  image.dirty();
 	  }
 	  
 	  public void strokeRect(float x, float y, float w, float h){
-		  
+		  graphics.setPaint(strokePaint);
 		  graphics.draw(new Rectangle2D.Float(x, y, w, h));
 		  image.dirty();
 	  }
@@ -180,10 +194,14 @@ public class CanvasRenderingContext2D {
 	  public void rect(float x, float y, float w, float h){}
 	  public void arc(float x, float y, float radius, float startAngle, float endAngle, boolean anticlockwise){}
 	  public void fill(){
+		  graphics.setPaint(fillPaint);
 		  graphics.fill(path);
+		  image.dirty();
 	  }
 	  public void stroke(){
+		  graphics.setPaint(strokePaint);
 		  graphics.draw(path);
+		  image.dirty();
 	  }
 	  public void clip(){}
 	  boolean jsFunction_isPointInPath(float x, float y){

@@ -14,6 +14,7 @@ import org.mozilla.javascript.ScriptableObject;
 
 public class Image  {
 
+	Window owner;
 	BufferedImage image;
 
 	public Image(int width, int height) {
@@ -40,7 +41,9 @@ public class Image  {
     }
 
 	 void dirty() {
-		
+		if(owner != null){
+			owner.helper.repaint();
+		}
 	}
 
 

@@ -6,8 +6,11 @@ package net.sf.rhinocanvas.ide;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
+import java.awt.EventQueue;
 import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -25,6 +28,7 @@ import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
+import java.util.Hashtable;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -39,12 +43,15 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 
 import org.mozilla.javascript.Callable;
@@ -61,6 +68,8 @@ import org.mozilla.javascript.tools.shell.ConsoleTextArea;
 import org.mozilla.javascript.tools.shell.Main;
 import org.ujac.ui.editor.CaretPositionEvent;
 import org.ujac.ui.editor.CaretPositionListener;
+
+import com.sun.corba.se.pept.transport.EventHandler;
 
 
 public class IDE  {
@@ -108,37 +117,45 @@ public class IDE  {
 	JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tabPane, new JScrollPane(console));
 	Properties properties = new Properties();
 
+
+	Hashtable intervals = new Hashtable();
+	private int intervalId;
 	
 
 	class Executor implements ContextAction, Runnable {
+
 		String scriptText;
 		Context context;
-		int timeOut;
+		int time;
 		int run;
+		boolean loop;
 		
 		Executor(String scriptText){
 			this.scriptText = scriptText;
 		}
 		
-		Executor(String scriptText, Context context, int timeout){
+		Executor(String scriptText, Context context, int time, boolean loop){
 			this(scriptText);
 			this.context = context;
-			this.timeOut = timeout;		
+			this.time = time;		
 			this.run = runNumber;
+			this.loop = loop;
 		}
 		
 		public void run(){
-			
-			try {
-				Thread.sleep(timeOut);
-			} catch (InterruptedException e) {
+			while(loop && run == runNumber){
+				try {
+					Thread.sleep(time);
+				} catch (InterruptedException e) {
 				// Auto-generated catch block
-				throw new RuntimeException(e);
-			}
-			if(run == runNumber){
-				run(Context.enter());
+					throw new RuntimeException(e);
+				}
+				if(run == runNumber){
+					run(Context.enter());
+				}
 			}
 		}
+		
 		
 		public Object run(Context cx) {
 			
@@ -189,13 +206,11 @@ public class IDE  {
 			e.printStackTrace();
 		}
 		
-		JMenuBar menu = new JMenuBar();
+		JMenuBar menuBar = new JMenuBar();
 		JMenu fileMenu = new JMenu("File");
 		JMenu runMenu = new JMenu("Run");
-		JMenu helpMenu = new JMenu("Help");
 		
-		
-		menu.add(fileMenu);
+		menuBar.add(fileMenu);
 		
 		fileMenu.setMnemonic('F');
 		runMenu.setMnemonic('R');
@@ -234,11 +249,16 @@ public class IDE  {
 		
 		fileMenu.add(new ReflectiveAction("Exit", "actionExit").setMnemonic(KeyEvent.VK_X));
 		
-		menu.add(runMenu);
+		menuBar.add(runMenu);
 		runMenu.add(new ReflectiveAction("Run", "actionRun").setMnemonic(KeyEvent.VK_R));
 		runMenu.add(new ReflectiveAction("Terminate", "actionTerminate").setMnemonic(KeyEvent.VK_T));
 		
-		frame.setJMenuBar(menu);
+		JMenu menu = new JMenu("Help");
+		menuBar.add(menu);
+		menu.add(new ReflectiveAction("About RhinoCanvas", "actionAbout"));
+		
+		
+		frame.setJMenuBar(menuBar);
 		
 		
 		
@@ -289,13 +309,46 @@ public class IDE  {
 //		 "defineClass('net.sf.rhinocanvas.CanvasRenderingContext2D');");
 //	        
 	        Main.getGlobal().defineProperty("setTimeout", new Callable(){
+				// todo: allow function parameter instead of string (!!!)
 
 				public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-					new Thread(new Executor((String) args[0], cx, ((Number) args[1]).intValue())).start();
+					new Thread(new Executor((String) args[0], cx, ((Number) args[1]).intValue(), false)).start();
 					return null;
 				}
 	        	
 	        }, 0);
+
+	        Main.getGlobal().defineProperty("setInterval", new Callable(){
+
+				public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+					// todo: allow function parameter instead of string (!!!)
+					Executor e = new Executor((String) args[0], cx, ((Number) args[1]).intValue(), true);
+					Integer id = new Integer(intervalId++);
+					intervals.put(id, e);
+					new Thread(e).start();
+					return id;
+				}
+	        	
+	        }, 0);
+
+	        Main.getGlobal().defineProperty("clearInterval", new Callable(){
+
+				public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
+					// todo: allow function parameter instead of string (!!!)
+					Integer id = new Integer(((Number) args[0]).intValue());
+					Executor e = (Executor) intervals.get(id);
+					e.loop = false;
+					intervals.remove(id);
+					return null;
+				}
+	        	
+	        }, 0);
+
+	        
+	        
+	        
+	        
+	        
 	        Main.main(new String[0]);
 	}
 	
@@ -311,7 +364,24 @@ public class IDE  {
 		    	  status.setText("pos: "+(evt.getRow() + 1) + "," + (evt.getColumn() + 1));
 		      }
 		    });
-//		tab.editor.addCaretListener(new CaretListener(){
+		
+		tab.editor.getDocument().addDocumentListener(new DocumentListener(){
+
+			public void changedUpdate(DocumentEvent arg0) {
+				changed();
+			}
+
+			public void insertUpdate(DocumentEvent arg0) {
+				changed();
+			}
+
+			public void removeUpdate(DocumentEvent arg0) {
+				changed();
+			}
+			
+		});
+		
+		//		tab.editor.addCaretListener(new CaretListener(){
 //
 //			public void caretUpdate(CaretEvent ce) {
 //				JEditorPane e = getCurrentTab().editor;
@@ -320,6 +390,17 @@ public class IDE  {
 //			}
 //			
 //		});
+	}
+
+
+	protected void changed() {
+		Tab tab = getCurrentTab();
+		
+		if(!tab.changed){
+			tab.changed = true;
+			int index = tabPane.getSelectedIndex();
+			tabPane.setTitleAt(index, tabPane.getTitleAt(index)+"*");
+		}
 	}
 
 
@@ -365,6 +446,10 @@ public class IDE  {
 		
 		tabs.remove(index);
 		tabPane.remove(index);
+		
+		if(tabs.size() == 0){
+			addTab(null);
+		}
 	}
 	
 	public void actionSave(){
@@ -376,9 +461,15 @@ public class IDE  {
 		}
 		else{
 			try{
-			Writer w = new FileWriter(tab.file);
-			w.write(tab.editor.getText());
-			w.close();
+				Writer w = new FileWriter(tab.file);
+				w.write(tab.editor.getText());
+				w.close();
+				
+				int index = tabPane.getSelectedIndex();
+				String title = tabPane.getTitleAt(index);
+				if(title.endsWith("*")){
+					tabPane.setTitleAt(index, title.substring(0, title.length()-1));
+				}
 			}
 			catch(Exception e){
 				throw new RuntimeException(e);
@@ -431,9 +522,21 @@ public class IDE  {
 	
 	public void actionTerminate(){
 		runNumber++;
+		
+		intervals = new Hashtable();
 	}
 	
-	
+	public void actionAbout(){
+		JOptionPane.showMessageDialog(frame, 
+				"Rhino Canvas IDE\n\n"+
+				"Components:\n"+
+				"Rhino Javascript Interpreter (C) 1997-2006 Mozilla Foundation\n"+
+				"UJAC-UI / jEdit Component (C) 2005\n"+
+				"Rhino Canvas / CSS4J (C) 2006 Stefan Haustein", 
+				"About RhinoCanvasIDE", JOptionPane.INFORMATION_MESSAGE);
+		
+		
+	}
 	
 	
 	
