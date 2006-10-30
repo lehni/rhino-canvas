@@ -24,6 +24,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Writer;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -143,17 +144,31 @@ public class IDE  {
 		}
 		
 		public void run(){
-			while(loop && run == runNumber){
+			do{
 				try {
 					Thread.sleep(time);
 				} catch (InterruptedException e) {
 				// Auto-generated catch block
 					throw new RuntimeException(e);
 				}
-				if(run == runNumber){
+				
+				if(run != runNumber){
+					break;
+				}
+				
+				if(EventQueue.isDispatchThread()){
 					run(Context.enter());
 				}
+				else{
+					try {
+						EventQueue.invokeAndWait(new Executor(scriptText, context, 0, false));
+					} catch (Exception e) {
+						
+						e.printStackTrace();
+					}
+				}
 			}
+			while(loop);
 		}
 		
 		
