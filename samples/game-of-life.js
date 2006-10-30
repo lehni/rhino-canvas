@@ -23,6 +23,7 @@
  * DEALINGS IN THE SOFTWARE.
  *
  * 2006-02-26: Initial version using Conway's original 23/3 rules.
+ * 2006-10-29: Stefan Haustein: small changes to make the stuff run with rhino-canvas
  *
  */
 

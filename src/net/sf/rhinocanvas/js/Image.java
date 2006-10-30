@@ -1,7 +1,9 @@
 package net.sf.rhinocanvas.js;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
@@ -17,6 +19,9 @@ public class Image  {
 	public Image(int width, int height) {
     
     	image = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
+    	Graphics g = image.getGraphics();
+    	g.setColor(Color.WHITE);
+    	g.fillRect(0, 0, width, height);
     
     }
 

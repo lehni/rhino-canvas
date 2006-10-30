@@ -1,9 +1,12 @@
 package net.sf.rhinocanvas.js;
 
+import java.awt.AlphaComposite;
 import java.awt.Color;
+import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
 import java.util.Stack;
@@ -26,51 +29,64 @@ public class CanvasRenderingContext2D {
 	}
 	
 	
-
-
-	public String getClassName() {
-		
-		return "CanvasRenderingContext2D";
-	}
-	
 	
 	 // back-reference to the canvas
 	//  readonly attribute HTMLCanvasElement canvas;
 
 	  // state
 //	 push state on state stack
-	  void jsFunction_save(){
+	  public void save(){
 		  stack.push(new ContextState(graphics));  
 	  } 
-	  void jsFunction_restore(){
+	  
+	  
+	  public void restore(){
 		  ContextState st = (ContextState) stack.pop();
 		  st.apply(graphics);
 		  
 	  } // pop state stack and restore state
 
 	  // transformations (default transform is the identity matrix)
-	  void jsFunction_scale(float x, float y){
-		  jsFunction_transform(x, 0, 0, y, 0, 0);
+	  public void scale(double x, double y){
+		  graphics.scale(x, y);
 	  }
-	  void jsFunction_rotate(float angle){}
-	  void jsFunction_translate(float x, float y){
-		  jsFunction_transform(1, 0, 0, 1, x, y);
-	  }
-	  void jsFunction_transform(float m11, float m12, float m21, float m22, float dx, float dy){
+	  public void rotate(double angle){
+		  graphics.rotate(angle);
 		  
 	  }
-	  void jsFunction_setTransform(float m11, float m12, float m21, float m22, float dx, float dy){}
+	  public void translate(double x, double y){
+		  graphics.translate(x, y);
+	  }
+	  public void transform(float m11, float m12, float m21, float m22, float dx, float dy){
+		  AffineTransform at = new AffineTransform(m11, m12, m21, m22, dx, dy);
+		  graphics.transform(at);
+	  }
+	  public void setTransform(float m11, float m12, float m21, float m22, float dx, float dy){
+		  AffineTransform at = new AffineTransform(m11, m12, m21, m22, dx, dy);
+		  graphics.setTransform(at);
+	  }
 
 	  /*
 	  // compositing
-	           attribute float globalAlpha{} // (default 1.0)
-	           attribute DOMString globalCompositeOperation; // (default over)
+	   */
+	  private float globalAlpha = 1.0f;
+	  public float getGlobalAlpha(){
+		  return globalAlpha;
+		  
+	  } // (default 1.0)
+	  
+	  public void setGlobalAlpha(float globalAlpha){
+		  this.globalAlpha = globalAlpha;
+		  graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, globalAlpha));
+	  }
+	  
+	  //         attribute DOMString globalCompositeOperation; // (default over)
 
 	  // colours and styles
-	           attribute DOMObject strokeStyle; // (default black)
-	           attribute DOMObject fillStyle; // (default black)
+//	           attribute DOMObject strokeStyle; // (default black)
+//	           attribute DOMObject fillStyle; // (default black)
 	           
-	  */
+	
 	  
 	  private String fillStyle;
 	  
@@ -115,11 +131,11 @@ public class CanvasRenderingContext2D {
 	   * 
 	   * 
 	   */
-	  void jsFunction_clearRect(float x, float y, float w, float h){
-		  
+	  public void clearRect(float x, float y, float w, float h){
+		  	
 	  }
 	  
-//	  public void jsFunction_fillRect(Object x, Object y, Object w, Object h){
+//	  public public void fillRect(Object x, Object y, Object w, Object h){
 //		 // graphics.fill(new Rectangle2D.Double(x, y, w, h));
 //	  }
 	  
@@ -137,54 +153,54 @@ public class CanvasRenderingContext2D {
 	  }
 
 	  // path API
-	  void jsFunction_beginPath(){
+	  public void beginPath(){
 		  path = new GeneralPath();
 	  }
 	  
-	  void jsFunction_closePath(){
+	  public void closePath(){
 		  path.closePath();
 	  }
 	  
 	  
-	  void jsFunction_moveTo(float x, float  y){
+	  public void moveTo(float x, float  y){
 		  path.moveTo(x, y);
 	  }
 	  
-	  void jsFunction_lineTo(float x, float y){
+	  public void lineTo(float x, float y){
 		  path.lineTo(x, y);
 	  }
 	  
-	  void jsFunction_quadraticCurveTo(float cpx, float cpy, float x, float y){
+	  public void quadraticCurveTo(float cpx, float cpy, float x, float y){
 		  path.quadTo(cpx, cpy, x, y);
 	  }
-	  void jsFunction_bezierCurveTo(float cp1x, float cp1y, float cp2x, float cp2y, float x, float y){
+	  public void bezierCurveTo(float cp1x, float cp1y, float cp2x, float cp2y, float x, float y){
 		  path.curveTo(cp1x, cp1y, cp2x, cp2y, x, y);
 	  }
-	  void jsFunction_arcTo(float x1, float y1, float x2, float y2, float radius){}
-	  void jsFunction_rect(float x, float y, float w, float h){}
-	  void jsFunction_arc(float x, float y, float radius, float startAngle, float endAngle, boolean anticlockwise){}
-	  void jsFunction_fill(){
+	  public void arcTo(float x1, float y1, float x2, float y2, float radius){}
+	  public void rect(float x, float y, float w, float h){}
+	  public void arc(float x, float y, float radius, float startAngle, float endAngle, boolean anticlockwise){}
+	  public void fill(){
 		  graphics.fill(path);
 	  }
-	  void jsFunction_stroke(){
+	  public void stroke(){
 		  graphics.draw(path);
 	  }
-	  void jsFunction_clip(){}
+	  public void clip(){}
 	  boolean jsFunction_isPointInPath(float x, float y){
 		return path.contains(x, y);
 		}
 
 	  // drawing images
-//	  void jsFunction_drawImage(HTMLImageElement image, float dx, float dy){}
-//	  void jsFunction_drawImage(HTMLImageElement image, float dx, float dy, float dw, float dh){}
-//	  void jsFunction_drawImage(HTMLImageElement image, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh){}
-//	  void jsFunction_drawImage(HTMLCanvasElement image, float dx, float dy){}
-//	  void jsFunction_drawImage(HTMLCanvasElement image, float dx, float dy, float dw, float dh){}
-//	  void jsFunction_drawImage(HTMLCanvasElement image, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh){}
+//	  public void drawImage(HTMLImageElement image, float dx, float dy){}
+//	  public void drawImage(HTMLImageElement image, float dx, float dy, float dw, float dh){}
+//	  public void drawImage(HTMLImageElement image, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh){}
+//	  public void drawImage(HTMLCanvasElement image, float dx, float dy){}
+//	  public void drawImage(HTMLCanvasElement image, float dx, float dy, float dw, float dh){}
+//	  public void drawImage(HTMLCanvasElement image, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh){}
 
 	  // pixel manipulation
 //	  ImageData jsFunction_getImageData(float sx, float sy, float sw, float sh){}
-//	  void jsFunction_putImageData(ImageData image, float dx, float dy){}
+//	  public void putImageData(ImageData image, float dx, float dy){}
 
 	  // drawing text is not supported this version of the API
 	  // (there is no way to predict what metrics the fonts will have,

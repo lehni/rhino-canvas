@@ -1,0 +1,70 @@
+<project name="rhino-canvas" basedir="." default="build" >
+
+  <property name="version" value="0.12" />	
+	
+  <target name="init">
+  	<delete dir="tmpclasses" />
+	<mkdir dir="dist"/>
+	<mkdir dir="tmpclasses"/>
+  </target>
+
+  <target name="unpack" >
+	 <unzip dest="tmpclasses" overwrite="true" src="lib/js.jar" />
+	 <unzip dest="tmpclasses" overwrite="true" src="lib/css4j.jar" />
+  </target>
+	 	
+  <target name="compile" depends="init,unpack">
+  	<javac srcdir="src"
+  		
+  	       destdir="tmpclasses"
+  	       includes="**/*.java"
+  		   source="1.5"
+  		   target="1.5">
+  	    </javac>
+	  </target>
+	
+	 <target name="compile-tools" depends="compile">
+	  	<javac srcdir="toolsrc"
+	  		
+	  	       destdir="tmpclasses"
+	  	       includes="**/*.java"
+	  		   source="1.5"
+	  		   target="1.5">
+	  	    </javac>
+		  </target>	
+	
+  <target name="ide-jar" depends="compile-tools">
+    <jar jarfile="dist/rhino-canvas-ide-${version}.jar"
+         basedir="tmpclasses"
+    	manifest="toolsrc/META-INF/manifest.mf"
+     />
+  </target>
+	
+	
+  <target name="package" depends="ide-jar" >
+  	<mkdir dir="dist/rhino-canvas-ide-${version}"/>
+  	<copydir dest="dist/rhino-canvas-ide-${version}/samples" src="samples"></copydir>
+  	<copy file="dist/rhino-canvas-ide-${version}.jar" todir="dist/rhino-canvas-ide-${version}" />
+  	
+  <echo append="false" file="dist/rhino-canvas-ide-${version}/ide.cmd">java -jar rhino-canvas-ide-${version}.jar
+</echo>
+  	
+    <echo append="false" file="dist/rhino-canvas-ide-${version}/ide.sh">java -jar rhino-canvas-ide-${version}.jar
+</echo>
+
+  	
+  	<zip destfile="dist/rhino-canvas-ide-${version}.zip"> 
+		<fileset dir="dist" >
+			<include name="rhino-canvas-ide-${version}/**" />
+		</fileset>
+		
+  	</zip>
+  
+  	<deltree dir="dist/rhino-canvas-ide-${version}"/>
+  	
+  </target>
+	
+	
+  <target name="build" depends="package" />	
+	
+</project>
