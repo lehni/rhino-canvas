@@ -23,8 +23,8 @@ public class CanvasRenderingContext2D {
 	Paint fillPaint = Color.BLACK;
 	Paint strokePaint = Color.BLACK;
 	private String fillStyle = "#000";
-	  private String strokeStyle = "#000";
-	  private float globalAlpha = 1.0f;
+	private String strokeStyle = "#000";
+	private float globalAlpha = 1.0f;
 	
 	
 	CanvasRenderingContext2D(Image image) {
@@ -149,9 +149,6 @@ public class CanvasRenderingContext2D {
 		  image.dirty();
 	  }
 	  
-//	  public public void fillRect(Object x, Object y, Object w, Object h){
-//		 // graphics.fill(new Rectangle2D.Double(x, y, w, h));
-//	  }
 	  
 	  
 	  public void fillRect(double x, double y, double w, double h){

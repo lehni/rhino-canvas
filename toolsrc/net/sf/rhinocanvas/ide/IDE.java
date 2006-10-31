@@ -11,6 +11,8 @@ import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -49,6 +51,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.KeyStroke;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
@@ -69,14 +72,16 @@ import org.mozilla.javascript.tools.shell.ConsoleTextArea;
 import org.mozilla.javascript.tools.shell.Main;
 import org.ujac.ui.editor.CaretPositionEvent;
 import org.ujac.ui.editor.CaretPositionListener;
-
-import com.sun.corba.se.pept.transport.EventHandler;
-
+import org.ujac.ui.editor.TextArea;
+import org.ujac.ui.editor.action.FindKeyAction;
 
 public class IDE  {
 	
 	static int runNumber;
 
+	
+
+	
 	class ReflectiveAction extends AbstractAction{
 
 		Method method;
@@ -84,14 +89,17 @@ public class IDE  {
 		ReflectiveAction(String label, String methodName){
 			super(label);
 			
-			
 			try {
-				method = IDE.class.getMethod(methodName, null);
+				method = (IDE.class).getMethod(methodName, null);
 			} catch (Exception e) {
 				
 				throw new RuntimeException(e);
-			} 
+			} 			
 		}
+		
+		
+		
+		
 		
 		public void actionPerformed(ActionEvent ae) {
 			try {
@@ -101,12 +109,21 @@ public class IDE  {
 				throw new RuntimeException(e);
 			} 
 		}
-		Action setMnemonic(int m){
+		ReflectiveAction setMnemonic(int m){
 			putValue(Action.MNEMONIC_KEY, new Integer(m));
 			return this;
 		}
+		ReflectiveAction setAccelerator(String a){
+			if(a.startsWith("control ")){
+				a = "meta"+a.substring(7);
+			}
+			putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(a));
+			return this;
+		}
 	}
+
 	
+	boolean consoleFocussed;
 	File propertyFile = new File(System.getProperty("user.home"), ".rhino-canvas-ide.ini");
 	Vector tabs = new Vector();
 	JFrame frame = new JFrame("Rhino Canvas 'IDE' :)");
@@ -118,10 +135,8 @@ public class IDE  {
 	JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tabPane, new JScrollPane(console));
 	Properties properties = new Properties();
 
-
 	Hashtable intervals = new Hashtable();
 	private int intervalId;
-	
 
 	class Executor implements ContextAction, Runnable {
 
@@ -175,7 +190,7 @@ public class IDE  {
 		public Object run(Context cx) {
 			
 			 Script script = cx.compileString(scriptText ,
-                    "<command>", 1, null);
+                    getCurrentTab().title, 1, null);
 			 
 			 Object result = Main.evaluateScript(script, cx, Main.getGlobal());
 			 PrintStream ps = Main.getGlobal().getErr();
@@ -230,12 +245,14 @@ public class IDE  {
 		fileMenu.setMnemonic('F');
 		runMenu.setMnemonic('R');
 		
-		fileMenu.add(new ReflectiveAction("New", "actionNew").setMnemonic(KeyEvent.VK_N));
+		fileMenu.add(new ReflectiveAction("New", "actionNew")
+			.setMnemonic(KeyEvent.VK_N));
 		fileMenu.add(new ReflectiveAction("Open File...", "actionOpen"));
 		fileMenu.addSeparator();
 		fileMenu.add(new ReflectiveAction("Close", "actionClose").setMnemonic(KeyEvent.VK_C));
 		fileMenu.addSeparator();
-		fileMenu.add(new ReflectiveAction("Save", "actionSave").setMnemonic(KeyEvent.VK_S));
+		fileMenu.add(new ReflectiveAction("Save", "actionSave")
+			.setMnemonic(KeyEvent.VK_S).setAccelerator("control S"));
 		fileMenu.add(new ReflectiveAction("Save as...", "actionSaveAs").setMnemonic(KeyEvent.VK_A));
 		fileMenu.addSeparator();
 
@@ -262,20 +279,31 @@ public class IDE  {
 			fileMenu.add(a);
 		}
 		
-		fileMenu.add(new ReflectiveAction("Exit", "actionExit").setMnemonic(KeyEvent.VK_X));
+		fileMenu.add(new ReflectiveAction("Quit", "actionExit").setMnemonic(KeyEvent.VK_Q)
+				.setAccelerator("control Q"));
 		
 		menuBar.add(runMenu);
 		runMenu.add(new ReflectiveAction("Run", "actionRun").setMnemonic(KeyEvent.VK_R));
 		runMenu.add(new ReflectiveAction("Terminate", "actionTerminate").setMnemonic(KeyEvent.VK_T));
 		
-		JMenu menu = new JMenu("Help");
+		
+		JMenu menu = new JMenu("Edit");
+		menu.setMnemonic('E');
+		menuBar.add(menu);
+		menu.add(new ReflectiveAction("Cut", "actionCut").setAccelerator("control X"));		
+		menu.add(new ReflectiveAction("Copy", "actionCopy").setAccelerator("control C"));		
+		menu.add(new ReflectiveAction("Paste", "actionPaste").setAccelerator("control V"));
+		menu.addSeparator();
+		menu.add(new ReflectiveAction("Find", "actionFind").setAccelerator("control F"));
+		menu.add(new ReflectiveAction("Find next", "actionFindNext").setAccelerator("control K"));
+		
+		menu = new JMenu("Help");
+		menu.setMnemonic('H');
 		menuBar.add(menu);
 		menu.add(new ReflectiveAction("About RhinoCanvas", "actionAbout"));
-		
+
 		
 		frame.setJMenuBar(menuBar);
-		
-		
 		
 		addTab(null);
 //		addTab(new File("/home/haustein/eclipse/rhino-canvas/samples/simple.js"));
@@ -283,6 +311,19 @@ public class IDE  {
 		
         console.setRows(24);
         console.setColumns(80);
+        
+        console.addFocusListener(new FocusListener(){
+
+			public void focusGained(FocusEvent arg0) {
+				consoleFocussed = true;
+			}
+
+			public void focusLost(FocusEvent arg0) {
+				consoleFocussed = false;
+			}
+        	
+        });
+        
 		Container content = frame.getContentPane();
 		content.add(split);
 //		JPanel statusPanel = new JPanel(new FlowLayout());
@@ -455,58 +496,76 @@ public class IDE  {
             : tabs.elementAt(index));
 	}
 	
-	public void actionClose(){
-		int index = tabPane.getSelectedIndex();
-		if(index == -1) return;
+	public boolean actionClose(){
+
+		Tab tab = getCurrentTab();
+		if(tab == null){
+			return true;
+		}
+
+		if(tab.changed){
+			switch(JOptionPane.showConfirmDialog(frame, tab.title+" has unsaved changes. Save changes?", "Close", JOptionPane.YES_NO_CANCEL_OPTION)){
+			case JOptionPane.YES_OPTION:
+				if(actionSave()) break; //otherwise fall-through
+			case JOptionPane.CANCEL_OPTION:
+				return false;
+			} 
+		}
 		
+		int index = tabPane.getSelectedIndex();
 		tabs.remove(index);
 		tabPane.remove(index);
 		
 		if(tabs.size() == 0){
 			addTab(null);
-		}
+		} 
+
+		return true;
 	}
 	
-	public void actionSave(){
+	public boolean actionSave(){
 		Tab tab = getCurrentTab();
-		if(tab == null) return;
+		if(tab == null) return false;
 		
 		if(tab.file == null){
-			actionSaveAs();
+			return actionSaveAs();
 		}
-		else{
-			try{
-				Writer w = new FileWriter(tab.file);
-				w.write(tab.editor.getText());
-				w.close();
-				
-				int index = tabPane.getSelectedIndex();
-				String title = tabPane.getTitleAt(index);
-				if(title.endsWith("*")){
-					tabPane.setTitleAt(index, title.substring(0, title.length()-1));
-				}
+
+		try{
+			Writer w = new FileWriter(tab.file);
+			w.write(tab.editor.getText());
+			w.close();
+			
+			int index = tabPane.getSelectedIndex();
+			String title = tabPane.getTitleAt(index);
+			if(title.endsWith("*")){
+				tabPane.setTitleAt(index, title.substring(0, title.length()-1));
 			}
-			catch(Exception e){
-				throw new RuntimeException(e);
-			}
+			return true;
+		}
+		catch(Exception e){
+			throw new RuntimeException(e);
 		}
 	}
 	
-	public void actionSaveAs(){
+	public boolean actionSaveAs(){
 		Tab tab = getCurrentTab();
-		if(tab == null) return;
+		if(tab == null) return false;
 		
 		fileChooser.setDialogTitle("Save file");
         int returnVal = fileChooser.showSaveDialog(frame);
-        if(returnVal == JFileChooser.APPROVE_OPTION) {
-        	
-            File file = fileChooser.getSelectedFile();
-            
-            tab.file = file;
-            tab.title = file.getName();
-            tabPane.setTitleAt(tabPane.getSelectedIndex(), tab.title);
-            actionSave();
+        if(returnVal != JFileChooser.APPROVE_OPTION) {
+        	return false;
         }
+        	
+        File file = fileChooser.getSelectedFile();
+            
+        tab.file = file;
+        tab.title = file.getName();
+        tabPane.setTitleAt(tabPane.getSelectedIndex(), tab.title);
+        actionSave();
+        
+        return true;
 	}
 
 	
@@ -523,8 +582,13 @@ public class IDE  {
 			e.printStackTrace();
 		}
 		
+		while(tabs.size() > 1 || getCurrentTab().changed){
+			if(!actionClose()) return;
+		}
+		
 		System.exit(0);
 	}
+	
 	
 	
 	public void actionRun(){
@@ -534,6 +598,47 @@ public class IDE  {
 			exec(tab.editor.getText());
 		}
 	}
+	
+	
+	public void actionCut(){
+		if(consoleFocussed){
+			console.cut();
+		}
+		else {
+			getCurrentTab().editor.cut();
+		}
+	}
+
+	public void actionCopy(){
+		if(consoleFocussed){
+			console.copy();
+		}
+		else {
+			getCurrentTab().editor.copy();
+		}
+	}
+	
+	public void actionPaste(){
+		if(consoleFocussed){
+			console.paste();
+		}
+		else {
+			getCurrentTab().editor.paste();
+		}
+	}
+
+	public void actionFind(){
+		
+		String query = JOptionPane.showInputDialog("Find");
+		if(query != null){
+			getCurrentTab().editor.find(query);
+		}
+	}
+
+	public void actionFindNext(){
+		getCurrentTab().editor.findNext();
+	}
+
 	
 	public void actionTerminate(){
 		runNumber++;

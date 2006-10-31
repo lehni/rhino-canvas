@@ -90,7 +90,7 @@ public class Window  {
 
 	    	});*/
 	    	
-	    	helper.addKeyListener(new KeyListener(){
+	    	frame.addKeyListener(new KeyListener(){
 
 				public void keyPressed(KeyEvent ke) {
 					System.out.println("pressed Keycode: "+ke.getKeyCode()+" char: "+ke.getKeyChar());
@@ -106,8 +106,17 @@ public class Window  {
 				}
 
 				public void keyReleased(KeyEvent ke) {
-					System.out.println("rel. Keycode: "+ke.getKeyCode()+" char: "+ke.getKeyChar());
-					
+//					System.out.println("rel. Keycode: "+ke.getKeyCode()+" char: "+ke.getKeyChar());
+//					System.out.println("pressed Keycode: "+ke.getKeyCode()+" char: "+ke.getKeyChar());
+					if(onKeyUp != null){
+						NativeObject no = new NativeObject();
+						ScriptableObject.putProperty(no, "which", new Double(ke.getKeyCode()));
+						ScriptableObject.putProperty(no, "keyCode", new Double(ke.getKeyCode()));
+						
+						Context.enter(context);
+						
+						onKeyUp.call(context, onKeyUp, onKeyUp, new Object[]{no});
+					}
 				}
 
 				public void keyTyped(KeyEvent ke) {
