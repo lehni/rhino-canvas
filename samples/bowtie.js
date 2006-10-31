@@ -57,5 +57,6 @@ function drawBowtie(ctx, fillStyle) {
    ctx.restore();
  }
 
-canvas = new CanvasFrame("bowtie", 200, 200);
+canvas = new Image(200, 200);
+window = new Window("bowtie", canvas);
 draw();

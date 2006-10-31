@@ -116,7 +116,8 @@ function step(){
   setTimeout("step()", 1000);
 }
 
-canvas = new CanvasFrame("life", 200, 200);
+canvas = new Image(200, 200);
+window = new Window("Game of Life", canvas);
 cs = new ConwaySimulation(20, 20);
 step();
 

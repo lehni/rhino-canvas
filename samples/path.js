@@ -12,6 +12,7 @@ function draw() {
   ctx.fill();
 }
 
-canvas = new CanvasFrame("path", 200, 200);
+canvas = new Image(200, 200);
+window = new Window("Path", canvas);
 draw();
 
