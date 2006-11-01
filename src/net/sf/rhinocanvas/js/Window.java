@@ -70,27 +70,25 @@ public class Window  {
 	    	});
 	    	
 	    	helper = new Helper();
-    		/*
+    		
 	    	helper.addComponentListener(new ComponentAdapter(){
 
 	    		public void componentResized(ComponentEvent e) {
-					if(helper.getWidth() > image.getWidth()||helper.getHeight() > image.getHeight() ){
-						int w = Math.max(helper.getWidth(), image.getWidth());
-						int h = Math.max(helper.getHeight(), image.getHeight());
+					if(helper.getWidth() != Window.this.content.getWidth()||helper.getHeight() != Window.this.content.getHeight() ){
 						
-						
-						BufferedImage newImage = new BufferedImage(w, h, BufferedImage.TYPE_4BYTE_ABGR);
+
+						BufferedImage newImage = new BufferedImage(helper.getWidth(), helper.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
 					
 						Graphics g = newImage.getGraphics();
-						g.drawImage(image, 0, 0, null);
+						g.drawImage(Window.this.content.image, 0, 0, null);
 						//image.copyData(newImage.getRaster());
-						image = newImage;
+						Window.this.content.image = newImage;
 					}
 				}
 
-	    	});*/
+	    	});
 	    	
-	    	frame.addKeyListener(new KeyListener(){
+	    	helper.addKeyListener(new KeyListener(){
 
 				public void keyPressed(KeyEvent ke) {
 					System.out.println("pressed Keycode: "+ke.getKeyCode()+" char: "+ke.getKeyChar());
@@ -130,6 +128,10 @@ public class Window  {
 	    	frame.add(helper);
 	    	frame.pack();
 	    	frame.setVisible(true);
+	    	
+	    	helper.requestFocus();
+
+	    	frame.setResizable(false);
 	    }
 	  
 	 void dirty(){
@@ -142,6 +144,10 @@ public class Window  {
 	 
 	 public void setOnkeydown(Function okd){
 		 onKeyDown = okd;
+	 }
+	 
+	 public void setResizable(boolean rs){
+		 frame.setResizable(rs);
 	 }
 	 
 	 public Function getOnkeyup(){

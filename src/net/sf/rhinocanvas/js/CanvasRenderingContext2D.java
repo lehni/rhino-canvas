@@ -6,7 +6,9 @@ import java.awt.Composite;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
+import java.awt.RenderingHints;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Arc2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
 import java.util.Stack;
@@ -30,6 +32,7 @@ public class CanvasRenderingContext2D {
 	CanvasRenderingContext2D(Image image) {
 		this.image = image;
 		this.graphics = (Graphics2D) image.image.getGraphics();
+	//	graphics.setRenderingHint(RenderingHints.)
 		this.graphics.setPaint(Color.BLACK);
 	}
 	
@@ -99,7 +102,7 @@ public class CanvasRenderingContext2D {
 		  
 		  int color = fs.getColor();
 		  
-		  System.out.println("color: "+Integer.toHexString(fs.getColor()));
+//		  System.out.println("color: "+Integer.toHexString(fs.getColor()));
 		  
 		  fillPaint = new Color(fs.getColor(), true);
 		  
@@ -187,9 +190,75 @@ public class CanvasRenderingContext2D {
 	  public void bezierCurveTo(float cp1x, float cp1y, float cp2x, float cp2y, float x, float y){
 		  path.curveTo(cp1x, cp1y, cp2x, cp2y, x, y);
 	  }
-	  public void arcTo(float x1, float y1, float x2, float y2, float radius){}
-	  public void rect(float x, float y, float w, float h){}
-	  public void arc(float x, float y, float radius, float startAngle, float endAngle, boolean anticlockwise){}
+	  
+	  public void arcTo(float x1, float y1, float x2, float y2, float radius){
+		 System.out.println("arcTo Not Yet implemented...");
+	  }
+
+	  public void rect(float x, float y, float w, float h){
+		  path.append(new Rectangle2D.Double(x, y, w, h), true);
+	  }
+	  
+	  public void arc(double x, double y, double radius, double startAngle, double endAngle, boolean counterclockwise){
+		 
+		  boolean clockwise = !counterclockwise;
+		  double twopi = 2*Math.PI;
+		  
+		  
+		  while(startAngle < 0){
+			  startAngle += twopi;
+		  }
+		  while(startAngle > twopi){
+			  startAngle -= twopi;
+		  }
+		  
+		  while(endAngle < 0){
+			  endAngle += twopi;
+		  }
+		  while(endAngle > twopi){
+			  endAngle -= twopi;
+		  }
+		  
+//		  System.out.println("drawArc from "+ Math.toDegrees(startAngle)+" to "+Math.toDegrees(endAngle)+ 
+//				  (counterclockwise ? " counterclockwise":" clockwise"));
+		  
+		  
+		  if(clockwise){
+			  if(startAngle> endAngle){
+				  endAngle += twopi;
+			  }
+			  // ang must be negative!
+
+		  }
+		  else {
+			  if(startAngle < endAngle){
+				  endAngle -= twopi; 
+			  }
+		
+			  // ang must be positve!
+		  }
+		  double ang = startAngle-endAngle;
+		  
+//		  System.out.println("Angle: "+Math.toDegrees(ang)+ " should be "+(counterclockwise ? " positive ": " negative "));
+		  
+		  // TODO: is this correct? cf: http://developer.mozilla.org/en/docs/Canvas_tutorial:Drawing_shapes
+		  if(ang == 0.0){
+			  ang = Math.PI * 2;
+		  }
+		  
+		  
+
+		  startAngle = -startAngle;
+	
+
+		  path.append(new Arc2D.Double(
+				  x-radius, y-radius, 
+				  2*radius, 2*radius, 
+				  Math.toDegrees(startAngle), 
+				  Math.toDegrees(ang), 
+				  Arc2D.OPEN), true);
+	  }
+	  
 	  public void fill(){
 		  graphics.setPaint(fillPaint);
 		  graphics.fill(path);
