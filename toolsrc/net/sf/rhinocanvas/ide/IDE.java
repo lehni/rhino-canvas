@@ -541,6 +541,7 @@ public class IDE  {
 			if(title.endsWith("*")){
 				tabPane.setTitleAt(index, title.substring(0, title.length()-1));
 			}
+			tab.changed = false;
 			return true;
 		}
 		catch(Exception e){
