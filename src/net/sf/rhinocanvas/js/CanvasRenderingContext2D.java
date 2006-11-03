@@ -8,14 +8,19 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
 import java.awt.RenderingHints;
+import java.awt.Shape;
+import java.awt.Stroke;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
 import java.awt.geom.GeneralPath;
+import java.awt.geom.NoninvertibleTransformException;
+import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.ImageObserver;
 import java.util.Stack;
 
-import org.mozilla.javascript.ScriptableObject;
+import sun.rmi.runtime.GetThreadPoolAction;
+
 import net.sf.css4j.Value;
 
 public class CanvasRenderingContext2D {
@@ -26,21 +31,21 @@ public class CanvasRenderingContext2D {
 	Image image;
 	Paint fillPaint = Color.BLACK;
 	Paint strokePaint = Color.BLACK;
-	private Object fillStyle = "#000";
-	private Object strokeStyle = "#000";
-	private float globalAlpha = 1.0f;
-	private float lineWidth = 1.0f;
-	private String lineJoin = "miter";
-	private String lineCap = "butt";
-	private float miterLimit = 11.0f; // convert to rad?
+	Object fillStyle = "#000";
+	Object strokeStyle = "#000";
+	float globalAlpha = 1.0f;
+	String globalCompositeOperation = "source-over";
+	float lineWidth = 1.0f;
+	String lineJoin = "miter";
+	String lineCap = "butt";
+	float miterLimit = 11.0f; // convert to rad?
+
 	
 	CanvasRenderingContext2D(Image image) {
 		this.image = image;
 		this.graphics = (Graphics2D) image.image.getGraphics();
-	//	graphics.setRenderingHint(RenderingHints.)
+		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		this.graphics.setPaint(Color.BLACK);
-		
-		updateStroke();
 	}
 	
 	
@@ -51,13 +56,13 @@ public class CanvasRenderingContext2D {
 	  // state
 //	 push state on state stack
 	  public void save(){
-		  stack.push(new ContextState(graphics));  
+		  stack.push(new ContextState(this));  
 	  } 
 	  
 	  
 	  public void restore(){
 		  ContextState st = (ContextState) stack.pop();
-		  st.apply(graphics);
+		  st.apply(this);
 		  
 	  } // pop state stack and restore state
 
@@ -65,6 +70,7 @@ public class CanvasRenderingContext2D {
 	  public void scale(double x, double y){
 		  graphics.scale(x, y);
 	  }
+	  
 	  public void rotate(double angle){
 		  graphics.rotate(angle);
 		  
@@ -77,8 +83,7 @@ public class CanvasRenderingContext2D {
 		  graphics.transform(at);
 	  }
 	  public void setTransform(float m11, float m12, float m21, float m22, float dx, float dy){
-		  AffineTransform at = new AffineTransform(m11, m12, m21, m22, dx, dy);
-		  graphics.setTransform(at);
+		  graphics.setTransform(new AffineTransform(m11, m12, m21, m22, dx, dy));
 	  }
 
 	  /*
@@ -91,10 +96,50 @@ public class CanvasRenderingContext2D {
 	  
 	  public void setGlobalAlpha(float globalAlpha){
 		  this.globalAlpha = globalAlpha;
-		  graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.SRC_OVER, globalAlpha));
+		  setGlobalCompositeOperation(globalCompositeOperation);
 	  }
 	  
-	  //         attribute DOMString globalCompositeOperation; // (default over)
+	  
+		  
+	  public void setGlobalCompositeOperation(String op){
+		  
+		  globalCompositeOperation = op;
+		  
+		  int c;
+		  if("source-atop".equals(op)){
+			  c = AlphaComposite.SRC_ATOP;
+		  }
+		  else if("source-in".equals(op)){
+			  c = AlphaComposite.SRC_IN;
+		  }
+		  else if("source-out".equals(op)){
+			  c = AlphaComposite.SRC_OUT;
+		  }
+		  else if("destination-atop".equals(op)){
+			  c = AlphaComposite.DST_ATOP;
+		  }
+		  else if("destination-in".equals(op)){
+			  c = AlphaComposite.DST_IN;
+		  }
+		  else if("destination-out".equals(op)){
+			  c = AlphaComposite.DST_OUT;
+		  }
+		  else if("destination-over".equals(op)){
+			  c = AlphaComposite.DST_OVER;
+		  }
+		  else if("xor".equals(op)){
+			  c = AlphaComposite.XOR;
+		  }
+		  else if("over".equals(op)){
+			  c = AlphaComposite.CLEAR;
+		  }
+		  else {
+			  c = AlphaComposite.SRC_OVER;
+		  }
+		  
+		  graphics.setComposite(AlphaComposite.getInstance(c, globalAlpha));
+
+	  }
 	
 	  
 	  
@@ -107,17 +152,16 @@ public class CanvasRenderingContext2D {
 		  
 		  if(fillStyle instanceof String){
 			  Value fs = new Value((String) fillStyle);
-			  int color = fs.getColor();
 			  fillPaint = new Color(fs.getColor(), true);
 		  }
-		  else{
+		  else if(fillStyle instanceof CanvasGradient){
 			  fillPaint = ((CanvasGradient) fillStyle).getPaint();
 		  }
-		  
+		  else if(fillStyle instanceof CanvasPattern) {
+			  fillPaint = ((CanvasPattern) fillStyle).paint;
+		  }
 		  
 //		  System.out.println("color: "+Integer.toHexString(fs.getColor()));
-		  
-		  
 	  }
 
 	  
@@ -132,8 +176,11 @@ public class CanvasRenderingContext2D {
 			  Value fs = new Value((String)strokeStyle);			  
 			  strokePaint = new Color(fs.getColor(), true);
 		  }
-		  else{
+		  else if (strokeStyle instanceof CanvasGradient){
 			  strokePaint = ((CanvasGradient) strokeStyle).getPaint();
+		  }
+		  else {
+			  strokePaint = ((CanvasPattern) strokeStyle).paint;
 		  }
 	  }
 
@@ -148,15 +195,19 @@ public class CanvasRenderingContext2D {
 		  return new CanvasGradient(x0, y0, r0, x1, y1, r1);
 	  }
 
-	  /*	  CanvasPattern createPattern(HTMLImageElement image, DOMString repetition){}
-	  CanvasPattern createPattern(HTMLCanvasElement image, DOMString repetition){}
+	  public  CanvasPattern createPattern(Image image, String repetition){
+		  return new CanvasPattern(image, repetition);
+	  }
+	  
+	  
+	  // CanvasPattern createPattern(HTMLCanvasElement image, DOMString repetition){}
 
 	  // line caps/joins
-	           attribute float lineWidth; // (default 1)
+	  //         attribute float lineWidth; // (default 1)
 	           
-	           */
+	           
 	    
-	  private void updateStroke(){
+	  void updateStroke(){
 		  
 		  int cap;
 		  
@@ -219,10 +270,11 @@ public class CanvasRenderingContext2D {
 	  }
 	  
 	  
-	  public void setMiterLimit(float meterLimit){
+	  public void setMiterLimit(float miterLimit){
 		  this.miterLimit = miterLimit;
 		  updateStroke();
 	  }
+	  
 	  
 	  public float getMiterLimit(){
 		  return miterLimit;
@@ -239,18 +291,15 @@ public class CanvasRenderingContext2D {
 	           attribute float shadowOffsetY; // (default 0)
 	           attribute float shadowBlur; // (default 0)
 	           attribute DOMString shadowColor; // (default black)
-
-	  // rects
-	   * 
-	   * 
 	   */
+	  
 	  public void clearRect(float x, float y, float w, float h){
+		  graphics.setComposite(AlphaComposite.getInstance(AlphaComposite.CLEAR, globalAlpha));
 		  graphics.setPaint(Color.WHITE);
 		  graphics.fill(new Rectangle2D.Double(x, y, w, h));
+		  setGlobalAlpha(globalAlpha);
 		  image.dirty();
 	  }
-	  
-	  
 	  
 	  public void fillRect(double x, double y, double w, double h){
 		  graphics.setPaint(fillPaint);
@@ -275,18 +324,29 @@ public class CanvasRenderingContext2D {
 	  
 	  
 	  public void moveTo(float x, float  y){
-		  path.moveTo(x, y);
+		  Point2D p = new Point2D.Float(x, y);
+		  graphics.getTransform().transform(p, p);
+		  path.moveTo((float) p.getX(), (float) p.getY());
 	  }
 	  
 	  public void lineTo(float x, float y){
-		  path.lineTo(x, y);
+		  Point2D p = new Point2D.Float(x, y);
+		  graphics.getTransform().transform(p, p);
+		  path.lineTo((float) p.getX(), (float) p.getY());
 	  }
 	  
 	  public void quadraticCurveTo(float cpx, float cpy, float x, float y){
-		  path.quadTo(cpx, cpy, x, y);
+		  
+		  float[] xy = {cpx, cpy, x, y};
+		  graphics.getTransform().transform(xy, 0, xy, 0, 2);
+		  
+		  path.quadTo(xy[0], xy[1], xy[2], xy[3]);
 	  }
+	  
 	  public void bezierCurveTo(float cp1x, float cp1y, float cp2x, float cp2y, float x, float y){
-		  path.curveTo(cp1x, cp1y, cp2x, cp2y, x, y);
+		  float [] xy = {cp1x, cp1y, cp2x, cp2y, x, y};
+		  graphics.getTransform().transform(xy, 0, xy, 0, 3);
+		  path.curveTo(xy[0], xy[1], xy[2], xy[3], xy[4], xy[5]);
 	  }
 	  
 	  public void arcTo(float x1, float y1, float x2, float y2, float radius){
@@ -349,28 +409,49 @@ public class CanvasRenderingContext2D {
 		  startAngle = -startAngle;
 	
 
-		  path.append(new Arc2D.Double(
+		  path.append(graphics.getTransform().createTransformedShape(new Arc2D.Double(
 				  x-radius, y-radius, 
 				  2*radius, 2*radius, 
 				  Math.toDegrees(startAngle), 
 				  Math.toDegrees(ang), 
-				  Arc2D.OPEN), true);
+				  Arc2D.OPEN)), true);
 	  }
 	  
 	  public void fill(){
+		  AffineTransform t = graphics.getTransform();
+		  graphics.setTransform(new AffineTransform());
 		  graphics.setPaint(fillPaint);
 		  graphics.fill(path);
+		  graphics.setTransform(t);
 		  image.dirty();
 	  }
+	  
 	  public void stroke(){
+		  
 		  graphics.setPaint(strokePaint);
-		  graphics.draw(path);
+
+		  try {
+			graphics.draw(graphics.getTransform().createInverse().createTransformedShape(path));
+		} catch (NoninvertibleTransformException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		  image.dirty();
 	  }
-	  public void clip(){}
-	  boolean jsFunction_isPointInPath(float x, float y){
-		return path.contains(x, y);
-		}
+
+	  public void clip(){
+		  AffineTransform t = graphics.getTransform();
+		  graphics.setTransform(new AffineTransform());
+		  graphics.setClip(path);
+		  graphics.setTransform(t);
+	  }
+
+	  public boolean isPointInPath(float x, float y){
+		  Point2D p = new Point2D.Float(x, y);
+		  graphics.getTransform().transform(p, p);
+		  return path.contains(p);
+	  }
 
 
 
