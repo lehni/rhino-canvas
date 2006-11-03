@@ -595,7 +595,7 @@ public class IDE  {
 	public void actionRun(){
 		runNumber++;
 		Tab tab = getCurrentTab();
-		if(tab != null){
+		if(tab != null && tab.file != null){
 			try {
 				Main.getGlobal().defineProperty("documentBase", new URI("file", tab.file.getAbsolutePath(), null).toString(), 0);
 			} catch (URISyntaxException e) {
