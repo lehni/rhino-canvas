@@ -1,6 +1,7 @@
 package net.sf.rhinocanvas.js;
 
 import java.awt.AlphaComposite;
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Composite;
 import java.awt.Graphics;
@@ -11,6 +12,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.geom.Arc2D;
 import java.awt.geom.GeneralPath;
 import java.awt.geom.Rectangle2D;
+import java.awt.image.ImageObserver;
 import java.util.Stack;
 
 import org.mozilla.javascript.ScriptableObject;
@@ -24,16 +26,21 @@ public class CanvasRenderingContext2D {
 	Image image;
 	Paint fillPaint = Color.BLACK;
 	Paint strokePaint = Color.BLACK;
-	private String fillStyle = "#000";
-	private String strokeStyle = "#000";
+	private Object fillStyle = "#000";
+	private Object strokeStyle = "#000";
 	private float globalAlpha = 1.0f;
-	
+	private float lineWidth = 1.0f;
+	private String lineJoin = "miter";
+	private String lineCap = "butt";
+	private float miterLimit = 11.0f; // convert to rad?
 	
 	CanvasRenderingContext2D(Image image) {
 		this.image = image;
 		this.graphics = (Graphics2D) image.image.getGraphics();
 	//	graphics.setRenderingHint(RenderingHints.)
 		this.graphics.setPaint(Color.BLACK);
+		
+		updateStroke();
 	}
 	
 	
@@ -91,51 +98,142 @@ public class CanvasRenderingContext2D {
 	
 	  
 	  
-	  public String getFillStyle(){
+	  public Object getFillStyle(){
 		  return fillStyle;
 	  }
 	  
-	  public void setFillStyle(String fillStyle){
+	  public void setFillStyle(Object fillStyle){
 		  this.fillStyle = fillStyle;
 		  
-		  Value fs = new Value(fillStyle);
+		  if(fillStyle instanceof String){
+			  Value fs = new Value((String) fillStyle);
+			  int color = fs.getColor();
+			  fillPaint = new Color(fs.getColor(), true);
+		  }
+		  else{
+			  fillPaint = ((CanvasGradient) fillStyle).getPaint();
+		  }
 		  
-		  int color = fs.getColor();
 		  
 //		  System.out.println("color: "+Integer.toHexString(fs.getColor()));
 		  
-		  fillPaint = new Color(fs.getColor(), true);
 		  
 	  }
 
 	  
-	  public String getStrokeStyle(){
+	  public Object getStrokeStyle(){
 		  return strokeStyle;
 	  }
 	  
-	  public void setStrokeStyle(String strokeStyle){
+	  public void setStrokeStyle(Object strokeStyle){
 		  this.strokeStyle = strokeStyle;
 		  
-		  Value fs = new Value(strokeStyle);
-		  
-		  strokePaint = new Color(fs.getColor(), true);
+		  if(strokeStyle instanceof String){
+			  Value fs = new Value((String)strokeStyle);			  
+			  strokePaint = new Color(fs.getColor(), true);
+		  }
+		  else{
+			  strokePaint = ((CanvasGradient) strokeStyle).getPaint();
+		  }
 	  }
 
 	  
 	  
-	  /*
 	   
-	  CanvasGradient createLinearGradient(float x0, float y0, float x1, float y1);
-	  CanvasGradient createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1);
-	  CanvasPattern createPattern(HTMLImageElement image, DOMString repetition){}
+	  public CanvasGradient createLinearGradient(float x0, float y0, float x1, float y1){
+		  return new CanvasGradient(x0, y0, x1, y1);
+	  }
+	  
+	  public CanvasGradient createRadialGradient(float x0, float y0, float r0, float x1, float y1, float r1){
+		  return new CanvasGradient(x0, y0, r0, x1, y1, r1);
+	  }
+
+	  /*	  CanvasPattern createPattern(HTMLImageElement image, DOMString repetition){}
 	  CanvasPattern createPattern(HTMLCanvasElement image, DOMString repetition){}
 
 	  // line caps/joins
 	           attribute float lineWidth; // (default 1)
-	           attribute DOMString lineCap; // "butt", "round", "square" (default "butt")
-	           attribute DOMString lineJoin; // "round", "bevel", "miter" (default "miter")
-	           attribute float miterLimit; // (default 10)
+	           
+	           */
+	    
+	  private void updateStroke(){
+		  
+		  int cap;
+		  
+		  // butt, round and square. By default this property is set to butt.
+		  
+		  if(lineCap.equals("round")){
+			  cap = BasicStroke.CAP_ROUND;
+		  }
+		  else if(lineCap.equals("square")){
+			  cap = BasicStroke.CAP_SQUARE;
+		  }
+		  else{
+			  cap = BasicStroke.CAP_BUTT;
+		  }
+		  
+		  // round, bevel and miter. By default this property is set to miter.
+		  int join;
+		  if(lineJoin.equals("round")){
+			  join = BasicStroke.JOIN_ROUND;
+		  }
+		  else if(lineJoin.equals("bevel")){
+			  join = BasicStroke.JOIN_BEVEL;
+		  }
+		  else{
+			  join = BasicStroke.JOIN_MITER;
+		  }
+		  
+		  graphics.setStroke(new BasicStroke(lineWidth, cap, join, miterLimit));
+	  }
+	  
+	  
+	  
+	  public void setLineWidth(float lw){
+		  if(lineWidth != lw){
+			  lineWidth = lw;
+			  updateStroke();
+		  }
+		  
+	  }
+	  
+	  
+	  public float getLineWidth(){
+		  return lineWidth;
+	  }
+	  
+	  
 
+	  public void setLineCap(String cap){
+		  this.lineCap = cap;
+		  updateStroke();
+	  }
+	           
+	  public String getLineCap(){
+		  return lineCap;
+	  }
+	  
+	  public void setLineJoin(String join){
+		  this.lineJoin = join;
+		  updateStroke();
+	  }
+	  
+	  
+	  public void setMiterLimit(float meterLimit){
+		  this.miterLimit = miterLimit;
+		  updateStroke();
+	  }
+	  
+	  public float getMiterLimit(){
+		  return miterLimit;
+	  }
+	  	
+	  
+//	           attribute DOMString lineCap; // "butt", "round", "square" (default "butt")
+//	           attribute DOMString lineJoin; // "round", "bevel", "miter" (default "miter")
+//	           attribute float miterLimit; // (default 10)
+
+	  /*
 	  // shadows
 	           attribute float shadowOffsetX; // (default 0)
 	           attribute float shadowOffsetY; // (default 0)
@@ -274,8 +372,35 @@ public class CanvasRenderingContext2D {
 		return path.contains(x, y);
 		}
 
-	  // drawing images
-//	  public void drawImage(HTMLImageElement image, float dx, float dy){}
+
+
+	  public void drawImage(Image image, float dx, float dy){
+		  AffineTransform at = new AffineTransform();
+		  at.setToTranslation(dx, dy);
+		  graphics.drawImage(image.image, at, (ImageObserver) null);
+	  }
+	  
+	  public void drawImage(Image image, float dx, float dy, float dw, float dh){
+		  AffineTransform at = new AffineTransform(dw/image.getWidth(), 0, 0, dh/image.getHeight(), dx, dy);
+		  graphics.drawImage(image.image, at, (ImageObserver) null);
+	  }
+	  
+	  public void drawImage(Image image, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh){
+		  Graphics2D g = (Graphics2D) graphics.create();
+		  g.clip(new Rectangle2D.Float(dx, dy, dw, dh));
+		  
+		  float scaleX = dw/sw;
+		  float scaleY = dh/sh;
+		  
+		  float x0 = dx - sx*scaleX;
+		  float y0 = dy - sy*scaleY;
+		  
+		  AffineTransform at = new AffineTransform(scaleX, 0, 0, scaleY, x0, y0);
+		  g.drawImage(image.image, at, (ImageObserver) null);		  
+	  }
+	  
+	  
+	  
 //	  public void drawImage(HTMLImageElement image, float dx, float dy, float dw, float dh){}
 //	  public void drawImage(HTMLImageElement image, float sx, float sy, float sw, float sh, float dx, float dy, float dw, float dh){}
 //	  public void drawImage(HTMLCanvasElement image, float dx, float dy){}
