@@ -40,9 +40,9 @@ public class Window  {
 		public void paint(java.awt.Graphics g){
 			g.drawImage(content.image, 0, 0, frame);
 		}
-		public void update(java.awt.Graphics g){
-			g.drawImage(content.image, 0, 0, frame);
-		}
+//		public void update(java.awt.Graphics g){
+//			g.drawImage(content.image, 0, 0, frame);
+//		}
 		
 		public Dimension getPreferredSize(){
 			return new Dimension(content.getWidth(), content.getHeight());

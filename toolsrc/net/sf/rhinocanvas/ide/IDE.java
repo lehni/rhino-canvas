@@ -7,26 +7,20 @@ package net.sf.rhinocanvas.ide;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.EventQueue;
-import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.beans.PropertyChangeListener;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Writer;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -39,21 +33,15 @@ import javax.swing.JFrame;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
-import javax.swing.Box;
-import javax.swing.JEditorPane;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
 import javax.swing.KeyStroke;
-import javax.swing.event.CaretEvent;
-import javax.swing.event.CaretListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
@@ -64,22 +52,16 @@ import org.mozilla.javascript.ContextAction;
 import org.mozilla.javascript.RhinoException;
 import org.mozilla.javascript.Script;
 import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.ScriptableObject;
-import org.mozilla.javascript.ContextFactory.Listener;
 import org.mozilla.javascript.tools.ToolErrorReporter;
 import org.mozilla.javascript.tools.shell.ConsoleTextArea;
 
 import org.mozilla.javascript.tools.shell.Main;
 import org.ujac.ui.editor.CaretPositionEvent;
 import org.ujac.ui.editor.CaretPositionListener;
-import org.ujac.ui.editor.TextArea;
-import org.ujac.ui.editor.action.FindKeyAction;
 
 public class IDE  {
 	
 	static int runNumber;
-
-	
 
 	
 	class ReflectiveAction extends AbstractAction{
@@ -126,7 +108,7 @@ public class IDE  {
 	boolean consoleFocussed;
 	File propertyFile = new File(System.getProperty("user.home"), ".rhino-canvas-ide.ini");
 	Vector tabs = new Vector();
-	JFrame frame = new JFrame("Rhino Canvas 'IDE' :)");
+	JFrame frame = new JFrame("Rhino Canvas IDE");
 	JTabbedPane tabPane = new JTabbedPane();
 	JFileChooser fileChooser = new JFileChooser();
 	JLabel status = new JLabel();

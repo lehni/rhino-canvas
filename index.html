@@ -8,7 +8,7 @@
 </head>
 <body>
 
-<h1>Rhino Canvas</h1>
+<h1>Rhino Canvas <img src="www/img/rhino-small.png" /></h1>
 
 <h2>Rhino What?!</h2>
 
@@ -20,7 +20,26 @@ Canvas API implementation. However, it may also be useful for some other stuff:<
 <ul> 
 <li>Do graphics in Javascript in a non-proprietary way</li>
 <li>Experiment with the Canvas API without needing a browser (and a dummy HTML page)</li>
+<li>Give Kids something to play with that is not <a href="">tied to windows</a></li>
 </ul>
+
+<p>The project contains a minimal IDE that permits to conviniently edit and
+run Javascript applications. Unfortunately, there are some issues with Mac OS X, 
+and the Rhino Debugger still needs to be integrated.</p>
+
+<center><img src="www/img/ide.png" /></center>
+
+
+<h2>Download</h2>
+
+<p>A zip file containing an executable JAR file containing the 
+Rhino Canvas IDE and some sample files from various sources is available at the 
+<a href="http://sourceforge.net/project/showfiles.php?group_id=180977">Sourceforge 
+download page</a>.</p>
+
+<p>For the source code, please refer to the 
+<a href="http://sourceforge.net/cvs/?group_id=180977">sourceforge 
+CVS download instructions</a></p>
 
 
 <h2>Help Wanted</h2>
@@ -28,13 +47,19 @@ Canvas API implementation. However, it may also be useful for some other stuff:<
 <p>There are several open issues:</p>
 
 <ul>
-<li>The project needs a better logo</li>
+<li>The logo could be improved</li>
 <li>The Rhino debugger needs to be integrated with the IDE</li>
 <li>A watchdog thread that is able to interrupt the interpreter is needed. All timer
   based calls run in the AWT event handling queue to simplify graphics synchronization, 
-  so an infinite loop in a callback is fatal for the whole environment.
-<ul>
+  so an infinite loop in a callback is fatal for the whole environment</li>
+</ul>
 
+<p>Any help is welcome! Please use the resources available at the <a href="http://sourceforge.net/projects/rhino-canvas/">Sourceforge project
+page</a>.</p>
+
+
+<h2>Imprint</h2>
+<p>(C) 2006 Dr. Stefan Haustein, Rolandstr. 27, 46045 Oberhausen, Germany</p>
 
 
 
