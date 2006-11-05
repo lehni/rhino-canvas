@@ -1,8 +1,10 @@
 package net.sf.rhinocanvas.js;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.JobAttributes;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
@@ -11,6 +13,9 @@ import java.awt.event.KeyListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
@@ -27,8 +32,8 @@ import org.mozilla.javascript.tools.shell.Main;
 
 public class Window  {
 	
-
-	Frame frame;
+	boolean macOS = System.getProperty("mrj.version") != null;
+	JFrame frame;
 	Helper helper;
 	Image content;
 	Function onKeyDown;
@@ -36,8 +41,15 @@ public class Window  {
 	Context context;
 	
 	
-	class Helper extends java.awt.Canvas{
+	class Helper extends JPanel{
+		
+		
 		public void paint(java.awt.Graphics g){
+			if(!macOS){
+				g.setColor(getBackground());
+				g.fillRect(0,0,getWidth(),getHeight());
+			}
+			
 			g.drawImage(content.image, 0, 0, frame);
 		}
 //		public void update(java.awt.Graphics g){
@@ -57,9 +69,11 @@ public class Window  {
 	
 	  public Window(String title, Object content) {
 		  
+		  
+		  
 		  context = Context.getCurrentContext();
 
-	    	frame = new Frame(title);
+	    	frame = new JFrame(title);
 	    
 	    	setContent(content);
 	    	
@@ -70,7 +84,8 @@ public class Window  {
 	    	});
 	    	
 	    	helper = new Helper();
-    		
+	    	helper.setDoubleBuffered(true);
+
 	    	helper.addComponentListener(new ComponentAdapter(){
 
 	    		public void componentResized(ComponentEvent e) {
@@ -125,7 +140,7 @@ public class Window  {
 	    	});
 	    	
 	    	
-	    	frame.add(helper);
+	    	frame.getContentPane().add(helper);
 	    	frame.pack();
 	    	frame.setVisible(true);
 	    	

@@ -1,6 +1,5 @@
 package net.sf.rhinocanvas.ide;
 
-import com.apple.eawt.ApplicationAdapter;
 import com.apple.eawt.ApplicationEvent;
 import com.apple.eawt.Application;
 import com.apple.eawt.ApplicationListener;

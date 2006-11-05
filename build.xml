@@ -25,13 +25,19 @@
 	  </target>
 	
 	 <target name="compile-tools" depends="compile">
-	  	<javac srcdir="toolsrc"
+	  	<javac srcdir="toolsrc" classpath="lib/apple-eawt-stub.jar"
 	  		
 	  	       destdir="tmpclasses"
 	  	       includes="**/*.java"
 	  		   source="1.5"
 	  		   target="1.5">
 	  	    </javac>
+	 	
+	 	<copy todir="tmpclasses" >
+	 		<fileset dir="toolsrc">
+	 		  <include name="**/*.png"/></fileset>
+	 		</copy>
+	 	    
 		  </target>	
 	
   <target name="ide-jar" depends="compile-tools">

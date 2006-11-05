@@ -258,7 +258,9 @@ public class IDE extends JFrame {
 				Action a = new AbstractAction(""+i+". "+f.getName()){
 
 					public void actionPerformed(ActionEvent e) {
-						addTab(new File((String) getValue(SHORT_DESCRIPTION)));
+						
+						openFile(new File((String) getValue(SHORT_DESCRIPTION)));
+						
 					}
 					
 				};
@@ -413,6 +415,37 @@ public class IDE extends JFrame {
 	        Main.main(new String[0]);
 	}
 	
+	protected void openFile(File file) {
+
+        String path = file.getAbsolutePath();
+        if(!file.exists()){
+        	JOptionPane.showMessageDialog(this, "File "+file.getAbsolutePath()+" does not exist.");
+        	return;
+        }
+        
+        for(int i = 0; i < tabs.size(); i++){
+        	Tab ti = (Tab) tabs.get(i);
+        	if(ti.file != null && ti.file.getAbsolutePath().equals(path)){
+        		tabPane.setSelectedIndex(i);
+        		return;
+        	}
+        }
+        
+        try{
+        	addTab(file);//.getName(), new JScrollPane(editor));
+        }
+        catch (Exception e){
+        	JOptionPane.showMessageDialog(this, "Error accessing file "+file.getAbsolutePath()+": "+e);
+        	return;
+        }
+        
+        
+        addLRU(path);
+
+		
+	}
+
+
 	private void addTab(File file) {
 		Tab tab = new Tab(file);
 		tabs.add(tab);
@@ -469,29 +502,35 @@ public class IDE extends JFrame {
 		fileChooser.setDialogTitle("Select a file to load");
         int returnVal = fileChooser.showOpenDialog(this);
         if(returnVal == JFileChooser.APPROVE_OPTION) {
-            File file = fileChooser.getSelectedFile();
+            openFile(fileChooser.getSelectedFile());
          //   CWD = new File(fileChooser.getSelectedFile().getParent());
          //   return result;
             
-            String path = file.getAbsolutePath();
-            
-            int mx = 5;
-            for(int i = 1; i <= mx; i++){
-            	String lruI = properties.getProperty("lru-"+i);
-            	if(lruI == null || path.equals(lruI)){
-            		mx = i;
-            		break;
-            	}
-            }
-            
-            for(int i = mx; i > 1; i--){
-            	properties.setProperty("lru-"+i, properties.getProperty("lru-"+(i-1)));
-            }
-          
-            properties.setProperty("lru-1", path);
-            
-            addTab(file);//.getName(), new JScrollPane(editor));
         }
+	}
+	
+	private boolean checkOpen(String path) {
+		
+		return false;
+	}
+
+
+
+	void addLRU(String path){
+        int mx = 5;
+        for(int i = 1; i <= mx; i++){
+        	String lruI = properties.getProperty("lru-"+i);
+        	if(lruI == null || path.equals(lruI)){
+        		mx = i;
+        		break;
+        	}
+        }
+        
+        for(int i = mx; i > 1; i--){
+        	properties.setProperty("lru-"+i, properties.getProperty("lru-"+(i-1)));
+        }
+      
+        properties.setProperty("lru-1", path);
 	}
 	
 	Tab getCurrentTab(){
@@ -547,6 +586,10 @@ public class IDE extends JFrame {
 				tabPane.setTitleAt(index, title.substring(0, title.length()-1));
 			}
 			tab.changed = false;
+			
+			
+			addLRU(tab.file.getAbsolutePath());
+			
 			return true;
 		}
 		catch(Exception e){
