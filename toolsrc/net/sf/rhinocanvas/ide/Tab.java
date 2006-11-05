@@ -3,17 +3,13 @@
  */
 package net.sf.rhinocanvas.ide;
 
-import java.awt.Component;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.net.URI;
-
-import javax.swing.JEditorPane;
-import javax.swing.JTextArea;
 
 import org.ujac.ui.editor.TextArea;
+
 
 public class Tab {
 
@@ -21,7 +17,7 @@ public class Tab {
 	File file;
 	TextArea editor;
 	boolean changed;
-	static int unnamedCount;
+	static int unnamedCount = 0;
 	
 	Tab(File file){
 		this.file = file;
@@ -30,7 +26,8 @@ public class Tab {
 		editor.setLineHighlightEnabled(true);
 		
 		if(file == null){
-			title = "scratch-"+(++unnamedCount)+".js";
+			unnamedCount ++;
+			title = "unnamed"+(unnamedCount > 1 ? " "+unnamedCount : "")+".js";
 		}
 		else{
 			title = file.getName();

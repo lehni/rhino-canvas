@@ -1,6 +1,6 @@
 <project name="rhino-canvas" basedir="." default="build" >
 
-  <property name="version" value="0.12" />	
+  <property name="version" value="0.20" />	
 	
   <target name="init">
   	<delete dir="tmpclasses" />
@@ -11,6 +11,7 @@
   <target name="unpack" >
 	 <unzip dest="tmpclasses" overwrite="true" src="lib/js.jar" />
 	 <unzip dest="tmpclasses" overwrite="true" src="lib/css4j.jar" />
+	 <unzip dest="tmpclasses" overwrite="true" src="lib/batik-ext-awt.jar" />
   </target>
 	 	
   <target name="compile" depends="init,unpack">

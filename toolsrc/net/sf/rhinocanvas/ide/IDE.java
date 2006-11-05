@@ -7,6 +7,7 @@ package net.sf.rhinocanvas.ide;
 import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.EventQueue;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -19,6 +20,7 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Writer;
 import java.lang.reflect.Method;
@@ -29,15 +31,19 @@ import java.util.Hashtable;
 import java.util.Properties;
 import java.util.Vector;
 
+import javax.imageio.ImageIO;
 import javax.swing.JFrame;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -59,7 +65,9 @@ import org.mozilla.javascript.tools.shell.Main;
 import org.ujac.ui.editor.CaretPositionEvent;
 import org.ujac.ui.editor.CaretPositionListener;
 
-public class IDE  {
+import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
+
+public class IDE extends JFrame {
 	
 	static int runNumber;
 
@@ -72,7 +80,7 @@ public class IDE  {
 			super(label);
 			
 			try {
-				method = (IDE.class).getMethod(methodName, null);
+				method = (IDE.class).getMethod(methodName);
 			} catch (Exception e) {
 				
 				throw new RuntimeException(e);
@@ -85,30 +93,31 @@ public class IDE  {
 		
 		public void actionPerformed(ActionEvent ae) {
 			try {
-				method.invoke(IDE.this, null);
+				method.invoke(IDE.this);
+			
 			} catch (Exception e) {
 				
 				throw new RuntimeException(e);
 			} 
 		}
+		
 		ReflectiveAction setMnemonic(int m){
 			putValue(Action.MNEMONIC_KEY, new Integer(m));
 			return this;
 		}
+		
 		ReflectiveAction setAccelerator(String a){
-			if(a.startsWith("control ")){
-				a = "meta"+a.substring(7);
-			}
-			putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(a));
+			putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke((macOS ? "meta " : "control ") + a));
 			return this;
 		}
 	}
 
 	
 	boolean consoleFocussed;
+	boolean macOS = System.getProperty("mrj.version") != null;
 	File propertyFile = new File(System.getProperty("user.home"), ".rhino-canvas-ide.ini");
 	Vector tabs = new Vector();
-	JFrame frame = new JFrame("Rhino Canvas IDE");
+	//JFrame frame = new JFrame("Rhino Canvas IDE");
 	JTabbedPane tabPane = new JTabbedPane();
 	JFileChooser fileChooser = new JFileChooser();
 	JLabel status = new JLabel();
@@ -204,10 +213,11 @@ public class IDE  {
 	
 	
 	public IDE(){
+		String cwd = null;
 		try {
 			properties.load(new FileInputStream(propertyFile));
 			
-			String cwd = properties.getProperty("lru-1");
+			cwd = properties.getProperty("lru-1");
 			if(cwd != null){
 				fileChooser.setCurrentDirectory(new File(cwd).getParentFile());
 			}
@@ -216,6 +226,10 @@ public class IDE  {
 		}	
 		catch (Exception e) {
 			e.printStackTrace();
+		}
+		
+		if(macOS){
+			new MacHandler(this);
 		}
 		
 		JMenuBar menuBar = new JMenuBar();
@@ -230,39 +244,47 @@ public class IDE  {
 		fileMenu.add(new ReflectiveAction("New", "actionNew")
 			.setMnemonic(KeyEvent.VK_N));
 		fileMenu.add(new ReflectiveAction("Open File...", "actionOpen"));
+		
+		if(cwd != null){
+			JMenu recent = new JMenu("Open Recent");
+			fileMenu.add(recent);		
+			
+			for(int i = 1;; i++){
+				String path = properties.getProperty("lru-"+i);
+				if(path == null) {
+					break;
+				}
+				File f = new File(path);
+				Action a = new AbstractAction(""+i+". "+f.getName()){
+
+					public void actionPerformed(ActionEvent e) {
+						addTab(new File((String) getValue(SHORT_DESCRIPTION)));
+					}
+					
+				};
+				
+				a.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_0+i));
+				a.putValue(Action.SHORT_DESCRIPTION, path);
+				recent.add(a);
+			}
+
+			
+		}
+		
+		
+		
 		fileMenu.addSeparator();
 		fileMenu.add(new ReflectiveAction("Close", "actionClose").setMnemonic(KeyEvent.VK_C));
 		fileMenu.addSeparator();
 		fileMenu.add(new ReflectiveAction("Save", "actionSave")
-			.setMnemonic(KeyEvent.VK_S).setAccelerator("control S"));
+			.setMnemonic(KeyEvent.VK_S).setAccelerator("S"));
 		fileMenu.add(new ReflectiveAction("Save as...", "actionSaveAs").setMnemonic(KeyEvent.VK_A));
-		fileMenu.addSeparator();
 
 		
-		for(int i = 1;; i++){
-			String path = properties.getProperty("lru-"+i);
-			if(path == null) {
-				if(i > 1){
-					fileMenu.addSeparator();
-				}
-				break;
-			}
-			File f = new File(path);
-			Action a = new AbstractAction(""+i+". "+f.getName()){
-
-				public void actionPerformed(ActionEvent e) {
-					addTab(new File((String) getValue(SHORT_DESCRIPTION)));
-				}
-				
-			};
-			
-			a.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_0+i));
-			a.putValue(Action.SHORT_DESCRIPTION, path);
-			fileMenu.add(a);
+		
+		if(!macOS){
+			fileMenu.add(new ReflectiveAction("Quit", "actionExit").setMnemonic('Q'));
 		}
-		
-		fileMenu.add(new ReflectiveAction("Quit", "actionExit").setMnemonic(KeyEvent.VK_Q)
-				.setAccelerator("control Q"));
 		
 		menuBar.add(runMenu);
 		runMenu.add(new ReflectiveAction("Run", "actionRun").setMnemonic(KeyEvent.VK_R));
@@ -272,20 +294,21 @@ public class IDE  {
 		JMenu menu = new JMenu("Edit");
 		menu.setMnemonic('E');
 		menuBar.add(menu);
-		menu.add(new ReflectiveAction("Cut", "actionCut").setAccelerator("control X"));		
-		menu.add(new ReflectiveAction("Copy", "actionCopy").setAccelerator("control C"));		
-		menu.add(new ReflectiveAction("Paste", "actionPaste").setAccelerator("control V"));
+		menu.add(new ReflectiveAction("Cut", "actionCut").setAccelerator("X"));		
+		menu.add(new ReflectiveAction("Copy", "actionCopy").setAccelerator("C"));		
+		menu.add(new ReflectiveAction("Paste", "actionPaste").setAccelerator("V"));
 		menu.addSeparator();
-		menu.add(new ReflectiveAction("Find", "actionFind").setAccelerator("control F"));
-		menu.add(new ReflectiveAction("Find next", "actionFindNext").setAccelerator("control K"));
+		menu.add(new ReflectiveAction("Find", "actionFind").setAccelerator("F"));
+		menu.add(new ReflectiveAction("Find next", "actionFindNext").setAccelerator("K"));
 		
+		if(!macOS){
 		menu = new JMenu("Help");
 		menu.setMnemonic('H');
 		menuBar.add(menu);
 		menu.add(new ReflectiveAction("About RhinoCanvas", "actionAbout"));
-
+		}
 		
-		frame.setJMenuBar(menuBar);
+		setJMenuBar(menuBar);
 		
 		addTab(null);
 //		addTab(new File("/home/haustein/eclipse/rhino-canvas/samples/simple.js"));
@@ -306,12 +329,12 @@ public class IDE  {
         	
         });
         
-		Container content = frame.getContentPane();
+		Container content = getContentPane();
 		content.add(split);
 //		JPanel statusPanel = new JPanel(new FlowLayout());
 //		statusPanel.add(status);
 		content.add(BorderLayout.SOUTH, status);
-		frame.pack();
+		pack();
 		
 		split.setDividerLocation(0.67);
 		fileChooser.setFileFilter(new FileFilter(){
@@ -326,13 +349,13 @@ public class IDE  {
 			
 		});
 		
-		frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		frame.addWindowListener(new WindowAdapter(){
+		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+		addWindowListener(new WindowAdapter(){
 			public void 	windowClosing(WindowEvent e) {
 				actionExit();
 			}
 		});
-		frame.setVisible(true);
+		setVisible(true);
 		
 		Main.getGlobal().init(Main.shellContextFactory);
 		
@@ -444,7 +467,7 @@ public class IDE  {
 
 	public void actionOpen(){
 		fileChooser.setDialogTitle("Select a file to load");
-        int returnVal = fileChooser.showOpenDialog(frame);
+        int returnVal = fileChooser.showOpenDialog(this);
         if(returnVal == JFileChooser.APPROVE_OPTION) {
             File file = fileChooser.getSelectedFile();
          //   CWD = new File(fileChooser.getSelectedFile().getParent());
@@ -486,7 +509,7 @@ public class IDE  {
 		}
 
 		if(tab.changed){
-			switch(JOptionPane.showConfirmDialog(frame, tab.title+" has unsaved changes. Save changes?", "Close", JOptionPane.YES_NO_CANCEL_OPTION)){
+			switch(JOptionPane.showConfirmDialog(this, tab.title+" has unsaved changes. Save changes?", "Close", JOptionPane.YES_NO_CANCEL_OPTION)){
 			case JOptionPane.YES_OPTION:
 				if(actionSave()) break; //otherwise fall-through
 			case JOptionPane.CANCEL_OPTION:
@@ -536,7 +559,7 @@ public class IDE  {
 		if(tab == null) return false;
 		
 		fileChooser.setDialogTitle("Save file");
-        int returnVal = fileChooser.showSaveDialog(frame);
+        int returnVal = fileChooser.showSaveDialog(this);
         if(returnVal != JFileChooser.APPROVE_OPTION) {
         	return false;
         }
@@ -609,6 +632,7 @@ public class IDE  {
 	}
 	
 	public void actionPaste(){
+		System.out.println("Paste");
 		if(consoleFocussed){
 			console.paste();
 		}
@@ -637,19 +661,45 @@ public class IDE  {
 	}
 	
 	public void actionAbout(){
-		JOptionPane.showMessageDialog(frame, 
-				"Rhino Canvas IDE\n\n"+
-				"Components:\n"+
-				"Rhino Javascript Interpreter (C) 1997-2006 Mozilla Foundation\n"+
-				"UJAC-UI / jEdit Component (C) 2005\n"+
-				"Rhino Canvas / CSS4J (C) 2006 Stefan Haustein", 
-				"About RhinoCanvasIDE", JOptionPane.INFORMATION_MESSAGE);
+		
+		//116 116
+		//01805 012021
+		
+		//JPanel panel = new JPanel(new BorderLayout());
+		Icon icon;
+		try {
+			icon = new ImageIcon(ImageIO.read(IDE.class.getResourceAsStream("rhino-small.png")));
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+
+		
+//		panel.add(BorderLayout.WEST, icon);
+	
+		JLabel label = new JLabel("<html><p><b>Rhino Canvas IDE</b><br>"+
+				"http://rhino-canvas.sf.net<br>"+
+				"Source code licensed under the GNU Public License (GPL)<br>"+
+				"(c) 2006 Stefan Haustein<br>"+
+				"<br>"+
+				"<b>Components</b><br>"+
+				"Rhino Javascript Interpreter (c) 1997-2006 Mozilla Foundation<br>"+
+				"Batik AWT Extensions (c) 2005 Apache Foundation<br>"+
+				"UJAC-UI Editor Component (c) 2003,2004 Slava Pestov, Christian Lauer etal.<br>"+
+				"CSS4J (c) 2006 Stefan Haustein<br>", icon, JLabel.LEFT);
+		
+		JOptionPane.showMessageDialog(this, label,
+//				
+				"About RhinoCanvasIDE", JOptionPane.PLAIN_MESSAGE);
 		
 		
 	}
 	
 	
-
-
+	public void processKeyEvent(KeyEvent ke){
+		System.out.println("KE:"+ke);
+		super.processKeyEvent(ke);
+		
+		
+	}
 
 }
