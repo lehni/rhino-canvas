@@ -213,6 +213,7 @@ public class IDE extends JFrame {
 	
 	
 	public IDE(){
+		super("Rhino Canvas IDE");
 		String cwd = null;
 		try {
 			properties.load(new FileInputStream(propertyFile));
@@ -517,7 +518,7 @@ public class IDE extends JFrame {
 
 
 	void addLRU(String path){
-        int mx = 5;
+        int mx = 9;
         for(int i = 1; i <= mx; i++){
         	String lruI = properties.getProperty("lru-"+i);
         	if(lruI == null || path.equals(lruI)){
@@ -644,14 +645,10 @@ public class IDE extends JFrame {
 	public void actionRun(){
 		runNumber++;
 		Tab tab = getCurrentTab();
-		if(tab != null && tab.file != null){
-			try {
-				Main.getGlobal().defineProperty("documentBase", new URI("file", tab.file.getAbsolutePath(), null).toString(), 0);
-			} catch (URISyntaxException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+		if(tab != null){
+			if(tab.file != null){
+				Main.getGlobal().defineProperty("documentBase", tab.file.toURI().toString(), 0);
 			}
-			
 			exec(tab.editor.getText());
 		}
 	}
