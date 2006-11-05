@@ -18,16 +18,12 @@ function draw() {
   ctx.fillStyle = lingrad;
   ctx.fillRect(-75,-75,150,150);
 
-ctx.fillStyle='#fff';s
-    ctx.fillRect(50,50,10,10);
-
   // draw stars
   for (j=1;j<50;j++){
     ctx.save();
-    ctx.fillsStyle = '#fff';
+    ctx.fillStyle = '#fff';
     ctx.translate(75-Math.floor(Math.random()*150),
                   75-Math.floor(Math.random()*150));
-    ctx.fillRect(0,0,10,10);
 
     drawStar(ctx,Math.floor(Math.random()*4)+2);
     ctx.restore();
@@ -45,7 +41,7 @@ function drawStar(ctx,r){
     } else {
       ctx.lineTo(r,0);
     }
-    ctx.paint();
+  
   }
   ctx.closePath();
   ctx.fill();

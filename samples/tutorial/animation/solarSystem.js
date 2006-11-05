@@ -13,7 +13,7 @@ function draw() {
   //var ctx = document.getElementById('canvas').getContext('2d');
   var ctx = canvas.getContext('2d');
 
- // ctx.globalCompositeOperation = 'destination-over';
+  ctx.globalCompositeOperation = 'destination-over';
   ctx.clearRect(0,0,300,300); // clear canvas
 
   ctx.save();
@@ -37,6 +37,7 @@ function draw() {
 
   ctx.restore();
   
+  ctx.strokeStyle="#005";
   ctx.beginPath();
   ctx.arc(150,150,105,0,Math.PI*2,false); // Earth orbit
   ctx.stroke();
