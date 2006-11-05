@@ -580,7 +580,7 @@ public class IDE extends JFrame {
 	}
 	
 	
-	public void actionExit(){
+	public boolean actionExit(){
 		try{
 			properties.store(new FileOutputStream(propertyFile), ""+new Date());
 		}
@@ -589,10 +589,11 @@ public class IDE extends JFrame {
 		}
 		
 		while(tabs.size() > 1 || getCurrentTab().changed){
-			if(!actionClose()) return;
+			if(!actionClose()) return false;
 		}
 		
 		System.exit(0);
+		return true;
 	}
 	
 	

@@ -13,6 +13,7 @@ public class MacHandler extends Application {
 		
 	public MacHandler(IDE ide) {
 		this.ide = ide;
+		addAboutMenuItem();
 		
 		addApplicationListener(new ApplicationListener(){
 
@@ -42,8 +43,12 @@ public class MacHandler extends Application {
 			}
 
 			public void handleQuit(ApplicationEvent arg0) {
-				MacHandler.this.ide.actionExit();
-				arg0.setHandled(true);
+				if(MacHandler.this.ide.actionExit()){
+					arg0.setHandled(true);
+				}
+				else {
+					arg0.setHandled(false);
+				}
 			}
 
 			public void handleReOpenApplication(ApplicationEvent arg0) {
