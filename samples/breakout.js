@@ -83,7 +83,8 @@ function gameover(){
   balllaunched=false;
   time=0;
   status=-1;
-  document.getElementById("info").innerHTML="<font color='red'><b>game over. Press 's' to start</b></font><br>";
+  //document.getElementById("info").innerHTML="<font color='red'><b>game over. Press 's' to start</b></font><br>";
+  print ("game over. Press 's' to start");
   loadmap();
 }
 
@@ -165,7 +166,8 @@ function checkcollisions(){
 }
 
 function loadmap(){
-  //if (status==-1)
+  if (status==-1)
+    print("game over. Prss 's' to start");
     //document.getElementById("info").innerHTML="<font color='red'><b>game over. Press 's' to start</b></font><br>";
     //canvas=document.getElementById("map");
   if (canvas.getContext){
@@ -210,6 +212,7 @@ function last(){
     status==-1;
   }
   if (status!=-1){
+     print("Level: "+(level+1));
    //   document.getElementById("info").innerHTML="<b>Level:</b>"+(level+1)+"<br><b>Time:</b> "+time;
   }
   if (done==true){
