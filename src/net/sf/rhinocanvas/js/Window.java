@@ -10,6 +10,8 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -45,11 +47,10 @@ public class Window  {
 		
 		
 		public void paint(java.awt.Graphics g){
-			if(!macOS){
-				g.setColor(getBackground());
-				g.fillRect(0,0,getWidth(),getHeight());
-			}
-			
+			// image may be transparent...
+			g.setColor(getBackground());
+			g.fillRect(0,0,getWidth(),getHeight());
+
 			g.drawImage(content.image, 0, 0, frame);
 		}
 //		public void update(java.awt.Graphics g){
@@ -66,6 +67,8 @@ public class Window  {
 		}
 	}
 
+		
+	
 	
 	  public Window(String title, Object content) {
 		  
@@ -85,7 +88,39 @@ public class Window  {
 	    	
 	    	helper = new Helper();
 	    	helper.setDoubleBuffered(true);
+	    	
+	    	helper.addMouseListener(new MouseListener(){
 
+				public void mouseClicked(MouseEvent arg0) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				public void mouseEntered(MouseEvent arg0) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				public void mouseExited(MouseEvent arg0) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				public void mousePressed(MouseEvent arg0) {
+					System.out.println("Requesting the damn focus");
+					helper.requestFocus();
+					
+				}
+
+				public void mouseReleased(MouseEvent arg0) {
+					// TODO Auto-generated method stub
+					
+				}
+	    		
+	    	});
+	    	
+	    	helper.setFocusable(true);
+	    	
 	    	helper.addComponentListener(new ComponentAdapter(){
 
 	    		public void componentResized(ComponentEvent e) {
@@ -145,6 +180,7 @@ public class Window  {
 	    	frame.setVisible(true);
 	    	
 	    	helper.requestFocus();
+			 helper.requestFocusInWindow();
 
 	    	frame.setResizable(false);
 	    }
