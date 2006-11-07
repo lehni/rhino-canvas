@@ -59,7 +59,6 @@ import org.mozilla.javascript.RhinoException;
 import org.mozilla.javascript.Script;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.tools.ToolErrorReporter;
-import org.mozilla.javascript.tools.shell.ConsoleTextArea;
 
 import org.mozilla.javascript.tools.shell.Main;
 import org.ujac.ui.editor.CaretPositionEvent;
@@ -203,12 +202,9 @@ public class IDE extends JFrame {
 		 }
 	}
 	
-
 	
 	void exec(String scriptText){
-	
 		Main.shellContextFactory.call(new Executor(scriptText));
-        
 	}
 	
 	
@@ -259,22 +255,15 @@ public class IDE extends JFrame {
 				Action a = new AbstractAction(""+i+". "+f.getName()){
 
 					public void actionPerformed(ActionEvent e) {
-						
 						openFile(new File((String) getValue(SHORT_DESCRIPTION)));
-						
 					}
-					
 				};
 				
 				a.putValue(Action.MNEMONIC_KEY, new Integer(KeyEvent.VK_0+i));
 				a.putValue(Action.SHORT_DESCRIPTION, path);
 				recent.add(a);
 			}
-
-			
 		}
-		
-		
 		
 		fileMenu.addSeparator();
 		fileMenu.add(new ReflectiveAction("Close", "actionClose").setMnemonic(KeyEvent.VK_C));
@@ -282,8 +271,6 @@ public class IDE extends JFrame {
 		fileMenu.add(new ReflectiveAction("Save", "actionSave")
 			.setMnemonic(KeyEvent.VK_S).setAccelerator("S"));
 		fileMenu.add(new ReflectiveAction("Save as...", "actionSaveAs").setMnemonic(KeyEvent.VK_A));
-
-		
 		
 		if(!macOS){
 			fileMenu.add(new ReflectiveAction("Quit", "actionExit").setMnemonic('Q'));
@@ -293,7 +280,6 @@ public class IDE extends JFrame {
 		runMenu.add(new ReflectiveAction("Run", "actionRun").setMnemonic(KeyEvent.VK_R));
 		runMenu.add(new ReflectiveAction("Terminate", "actionTerminate").setMnemonic(KeyEvent.VK_T));
 		
-		
 		JMenu menu = new JMenu("Edit");
 		menu.setMnemonic('E');
 		menuBar.add(menu);
@@ -301,14 +287,15 @@ public class IDE extends JFrame {
 		menu.add(new ReflectiveAction("Copy", "actionCopy").setAccelerator("C"));		
 		menu.add(new ReflectiveAction("Paste", "actionPaste").setAccelerator("V"));
 		menu.addSeparator();
-		menu.add(new ReflectiveAction("Find", "actionFind").setAccelerator("F"));
-		menu.add(new ReflectiveAction("Find next", "actionFindNext").setAccelerator("K"));
+		menu.add(new ReflectiveAction("Find / Replace...", "actionFind").setAccelerator("F"));
+		menu.add(new ReflectiveAction("Goto Line...", "actionGoto").setAccelerator("L"));
+//		menu.add(new ReflectiveAction("Find next", "actionFindNext").setAccelerator("K"));
 		
 		if(!macOS){
-		menu = new JMenu("Help");
-		menu.setMnemonic('H');
-		menuBar.add(menu);
-		menu.add(new ReflectiveAction("About RhinoCanvas", "actionAbout"));
+			menu = new JMenu("Help");
+			menu.setMnemonic('H');
+			menuBar.add(menu);
+			menu.add(new ReflectiveAction("About RhinoCanvas", "actionAbout"));
 		}
 		
 		setJMenuBar(menuBar);
@@ -682,16 +669,12 @@ public class IDE extends JFrame {
 		}
 	}
 
-	public void actionFind(){
-		
-		String query = JOptionPane.showInputDialog("Find");
-		if(query != null){
-			getCurrentTab().editor.find(query);
-		}
+	public void actionFind(){	
+		getCurrentTab().editor.showFindDialog();
 	}
 
-	public void actionFindNext(){
-		getCurrentTab().editor.findNext();
+	public void actionGoto(){	
+		getCurrentTab().editor.showGotoLineDialog();
 	}
 
 	
