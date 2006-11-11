@@ -84,7 +84,7 @@ function gameover(){
   time=0;
   status=-1;
   //document.getElementById("info").innerHTML="<font color='red'><b>game over. Press 's' to start</b></font><br>";
-  print ("game over. Press 's' to start");
+  //print ("game over. Press 's' to start");
   loadmap();
 }
 
@@ -166,8 +166,8 @@ function checkcollisions(){
 }
 
 function loadmap(){
-  if (status==-1)
-    print("game over. Prss 's' to start");
+  //if (status==-1)
+  //  print("game over. Prss 's' to start");
     //document.getElementById("info").innerHTML="<font color='red'><b>game over. Press 's' to start</b></font><br>";
     //canvas=document.getElementById("map");
   if (canvas.getContext){
@@ -183,6 +183,21 @@ function loadmap(){
         }
       }
     }
+    if(status == -1){
+       ctx.textStyle.textAlign="center";
+       ctx.textStyle.verticalAlign="bottom";
+       ctx.drawString(60,60, "Game Over.");
+      ctx.textStyle.verticalAlign="top";
+       ctx.drawString(60,60, "Press 's' to start");
+    }
+    else if(balllaunched==false){
+       ctx.textStyle.textAlign="center";
+       ctx.textStyle.verticalAlign="bottom";
+       ctx.drawString(60,60, "Level: "+(level+1));
+       ctx.textStyle.verticalAlign="top";
+       ctx.drawString(60,60, "Press 'up' to launch");
+    }
+
   }
   //move paddle
   ctx.fillStyle="#000000";
@@ -211,10 +226,10 @@ function last(){
     alert("Wow you completed all 8 levels! Congrats..your time was:\n"+time);
     status==-1;
   }
-  if (status!=-1){
-     print("Level: "+(level+1));
+ // if (status!=-1){
+ //    print("Level: "+(level+1));
    //   document.getElementById("info").innerHTML="<b>Level:</b>"+(level+1)+"<br><b>Time:</b> "+time;
-  }
+ // }
   if (done==true){
     level++;
     for (var i=0; i<=level; i++){

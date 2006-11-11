@@ -1,6 +1,6 @@
 <project name="rhino-canvas" basedir="." default="build" >
 
-  <property name="version" value="0.22" />	
+  <property name="version" value="0.30" />	
 	
   <target name="init">
   	<delete dir="tmpclasses" />

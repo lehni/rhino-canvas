@@ -4,6 +4,8 @@ import java.awt.AlphaComposite;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Composite;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Paint;
@@ -40,12 +42,14 @@ public class CanvasRenderingContext2D {
 	String lineCap = "butt";
 	float miterLimit = 11.0f; // convert to rad?
 
+	public CanvasTextStyle textStyle;
 	
 	CanvasRenderingContext2D(Image image) {
 		this.image = image;
 		this.graphics = (Graphics2D) image.image.getGraphics();
 		graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		this.graphics.setPaint(Color.BLACK);
+		textStyle = new CanvasTextStyle(this);
 	}
 	
 	
@@ -141,7 +145,44 @@ public class CanvasRenderingContext2D {
 
 	  }
 	
-	  
+	  public void drawString(float x, float y, String s){
+		  
+		  Font font = textStyle.getFont();
+		  FontMetrics metrics = textStyle.getMetrics();
+		  
+		  String ta = textStyle.getTextAlign();
+		  if("center".equals(ta)){
+			  x = x - metrics.stringWidth(s) / 2;
+		  }
+		  else if("right".equals(ta)){
+			  x = x - metrics.stringWidth(s);
+		  }
+		  
+		  // baseline | sub | super | top | text-top | middle | bottom | text-bottom |)
+		  
+		  y = y + metrics.getLeading()+metrics.getAscent();
+		  
+		  
+		  String va = textStyle.getVerticalAlign();
+		
+		  if("baseline".equals(va)){
+			  y = y - metrics.getLeading()+metrics.getAscent();
+		  }
+		  else if("text-top".equals(va)){
+			  y = y - metrics.getLeading();
+		  }
+		  else if("middle".equals(va)){
+			  y = y - metrics.getLeading() - metrics.getAscent() / 2;  
+		  }
+		  else if("bottom".equals(va) || "text-bottom".equals(va)){
+			  y = y - metrics.getHeight();
+		  }
+		  
+		  if(textStyle != null){
+			  graphics.setFont(textStyle.getFont());
+		  }
+		  graphics.drawString(s, x, y);
+	  }
 	  
 	  public Object getFillStyle(){
 		  return fillStyle;
