@@ -15,11 +15,10 @@
 <table width="100%">
 <tr>
 <td valign="top">
-There have been a lot of requests for a <em>drawString</em>() method in the Canvas API. 
-Unfortunately, adding a <em>drawString</em>() method is not as straight forward as it may seem;
-there are several more or less complex requirements that need to be taken into account,
-leading to endless discussions on the <a href="http://www.whatwg.org/mailing-list">WHATWG mailing list</a>, 
-without any conclusion in sight:
+There have been a lot of requests for a <em>drawString</em>() method in the Canvas API
+on the <a href="http://www.whatwg.org/mailing-list">WHATWG mailing list</a>. 
+Unfortunately, adding a <em>drawString</em>() method is not as simple as it may seem;
+there are several more or less complex requirements that need to be taken into account:
 
 <dl>
  <dt>Accessability</dt>
@@ -72,21 +71,17 @@ to enlarged labels dynamically.</p>
 
 <h3>Consistency</h3>
 
-<p>Other (complex) Canvas rendering properties such as the fill style are set via properties.
-For fillStyle, supported values are CSS String values ("rgb(r,g,b)", "#fff" etc.) or special
+<p>Other (complex) Canvas rendering properties such as the fill style are set 
+via properties of the class CanvasRenderingContext2D. For <em>fillStyle</em>, 
+supported values are CSS color values ("rgb(r,g,b)", "#fff" etc.) or special
 style objects (LinearGradient, Pattern, RadialGradient), created via the context object
 (createLinearGradient()...). </p>
 
 
-<h3>Performance</h3>
-
-<p>Creation of temporary objects should be avoided. </p>
-
-
 <h3>I18N</h3>
 
-<p>Fortunately, most internationalization issues are solved 
-implicitly by using unicode characters. For displaying
+<p>Fortunately, most internationalization issues are solved implicitly by 
+using unicode characters. For displaying
 <a href="http://lists.whatwg.org/htdig.cgi/whatwg-whatwg.org/2006-October/007457.html">Ruby</a> 
 annotations properly, it is necessary to be able to query text boundaries. </p>
 
@@ -97,12 +92,13 @@ annotations properly, it is necessary to be able to query text boundaries. </p>
 <a href="http://lists.whatwg.org/htdig.cgi/whatwg-whatwg.org/2006-October/007460.html">avoid overlapping content</a>, 
 in particular if the user is able to change the text size.</p>
 
-<p>Also, the accessability 
- and I18N requirements imply the availability of this information.</p>
+<p>Also, the accessability and I18N requirements depend on the availability of 
+this information.</p>
 
 <p>The size of the bounding box depends on the actual font, which may differ from 
 the requested font. The string width of several characters may differ from the
-sum of all character widths because of kerning.</p>
+sum of all character widths when kerning is supported.</p>
+
 
 <h2>Font Properties</h2>
 
@@ -129,9 +125,10 @@ into account:</p>
 <p>The properties <em>text-align</em> and <em>vertical-align</em> make much sense to 
 properly align a label with a given point of reference.</p>
 
-<p>CSS2 defines even more properties. While support for the font and alignement attributes seems to 
-be a good starting point, the API should take into account that future versions may
-want to add support for more CSS properties.</p>
+<p>CSS2 defines even more properties. While support for the font and alignement 
+attributes seems to be a good starting point, the API should take into account that 
+future versions may want to add support for more CSS properties.</p>
+
 
 <h2>Existing Proposals</h2>
 
@@ -139,16 +136,19 @@ want to add support for more CSS properties.</p>
 were two alternative proposals, drawElement(e) and a more minimalistic approach 
 by Andrew Fedoniouk.</p>
 
+
 <h3>drawElement(e)</h3>
 
-<p>This powerful approach was originally <a href="http://lists.whatwg.org/htdig.cgi/whatwg-whatwg.org/2006-October/007381.html">suggested</a> 
-by Gervase Markham. Despite its beauty, some hard problems
-remain, in particular CSS inheritance rules for elements drawn out of context, and 
-embedded objects such as images, Canvas elements, or
-Forms. The proposal seems very appealing in particular for bulk text. Bulk text, however, is probably
-better placed in the main document for various reasons, including accessability. Using drawElement() 
-for dynamic content (scores, labels in maps retreived from a server) seems problematic, and there
-is no simple way to obtain text metrics at a fine-grained level.</p>
+<p>This powerful approach was originally 
+<a href="http://lists.whatwg.org/htdig.cgi/whatwg-whatwg.org/2006-October/007381.html">suggested 
+by Gervase Markham</a>. Despite its beauty, some hard problems remain, in particular 
+CSS inheritance rules for elements drawn out of context, and embedded objects such as 
+images, Canvas elements, or Forms. The proposal seems very appealing in particular for 
+bulk text. Bulk text, however, is probably better placed in the main document for various 
+reasons, including accessability. Using drawElement()  for dynamic content (scores, labels 
+in maps retreived from a server) seems problematic, and there is no simple way to obtain 
+text metrics at a fine-grained level. Also, this approach does not help when the
+Canvas API is used outside of the browser context, where no DOM is available.</p>
  
 
 <h3>Minimalist Approach</h3>
@@ -167,16 +167,17 @@ Graphics.drawText(x,y,string);
 <p>The advantage of this approach is that it does not require a separate <em>Font</em> 
 or <em>TextStyle</em> object. However, it seems difficult to remember the correct
 order of parameters in setFont(). Also, when more font or text properties are added,
-the GraphicsContext class may get cluttered, and save() and restore() may become inefficient.</p>
+the GraphicsContext class may get cluttered, and save() and restore() may become 
+inefficient.</p>
 
 
-
+<a name="api"></a>
 <h2>Experimental API Design</h2>
 
 <p>Because of the issues described above, I think a simple, string-based solution 
 with a separate TextStyle object is the best approach to drawString(). After some 
 iteration on the WHATWG list, I have implemented the following API in 
-<a href="http://rhino-canvas.sf.net">rhino-canvas</a>:</p>
+<a href="../index.html">rhino-canvas</a>:</p>
 
 <pre>
 interface CanvasRenderingContext2D {
@@ -197,6 +198,8 @@ interface CanvasRenderingContext2D {
 
 
 interface CanvasTextStyle {
+  // relative values and inherit are not supported!
+
   attribute DOMString fontFamily; /
   attribute DOMString fontStyle;
   attribute DOMString fontVariant;
@@ -206,7 +209,7 @@ interface CanvasTextStyle {
   attribute DOMString textDecoration;
   attribute DOMString verticalAlign;
   attribute DOMString textTransform;
-  attribute DOMString textAlign; // justify obviously not supported 
+  attribute DOMString textAlign; // justify not supported 
 
   float stringWidth(in DOMString s); 
   float getHeight(); // ascent + descent + leading
@@ -221,6 +224,10 @@ interface CanvasTextStyle {
 //  attribute DOMString letterSpacing;
 };
 </pre>
+
+<p>The Rhino-Canvas implementation may be still subject to changes, based
+on disscussion on the WHATWG list or different drawString implementations
+by any major browser vendor.</p>
 
 </body>
 </html>

@@ -240,6 +240,14 @@ public class CanvasRenderingContext2D {
 		  return new CanvasPattern(image, repetition);
 	  }
 	  
+	  public CanvasTextStyle createTextStyle(){
+		  return new CanvasTextStyle(this);
+	  }
+	  
+	  public CanvasTextStyle createTextStyle(String attrs, String size, String family){
+		  return new CanvasTextStyle(this, attrs, size, family);
+	  }
+	  
 	  
 	  // CanvasPattern createPattern(HTMLCanvasElement image, DOMString repetition){}
 

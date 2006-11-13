@@ -9,7 +9,6 @@ import java.awt.FontMetrics;
 import net.sf.css4j.Value;
 
 public class CanvasTextStyle {
-	// TODO: Implement setters and getters and keep a dirty flag to reduce Font lookup overhead...
 	
 	private String fontFamily = "SansSerif";
 	private String fontStyle = "plain";
@@ -30,6 +29,21 @@ public class CanvasTextStyle {
 	CanvasTextStyle(CanvasRenderingContext2D context){
 		this.context = context;
 	}
+	
+	CanvasTextStyle(CanvasRenderingContext2D context, String attrs, String fontSize, String fontFamily){
+		this(context);
+		for(String attr: attrs.split(" ")){
+			if("bold".equals(attr)){
+				fontWeight = "bold";
+			}
+			else if("italic".equals(attr)){
+				fontVariant = "italic";
+			}
+		}
+		this.fontSize = fontSize;
+		this.fontFamily = fontFamily;
+	}
+	
 
 	Font getFont(){
 		if(font == null){
