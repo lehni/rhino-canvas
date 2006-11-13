@@ -81,21 +81,15 @@ public class IDE extends JFrame {
 			try {
 				method = (IDE.class).getMethod(methodName);
 			} catch (Exception e) {
-				
 				throw new RuntimeException(e);
 			} 			
 		}
 		
 		
-		
-		
-		
 		public void actionPerformed(ActionEvent ae) {
 			try {
 				method.invoke(IDE.this);
-			
 			} catch (Exception e) {
-				
 				throw new RuntimeException(e);
 			} 
 		}
@@ -324,9 +318,26 @@ public class IDE extends JFrame {
 //		JPanel statusPanel = new JPanel(new FlowLayout());
 //		statusPanel.add(status);
 		content.add(BorderLayout.SOUTH, status);
-		pack();
 		
-		split.setDividerLocation(0.67);
+		if(properties.getProperty("frame-x") != null){
+		
+			setLocation(
+					Integer.parseInt(properties.getProperty("frame-x", "0")), 
+					Integer.parseInt(properties.getProperty("frame-y", "0")));
+			setSize(
+					Integer.parseInt(properties.getProperty("frame-w", "640")), 
+					Integer.parseInt(properties.getProperty("frame-h", "480")));
+			
+			split.setDividerLocation(
+					Integer.parseInt(properties.getProperty("divider", "350")));
+			
+			validate();
+		}
+		else {
+			pack();
+		
+			split.setDividerLocation(0.67);
+		}
 		fileChooser.setFileFilter(new FileFilter(){
 
 			public boolean accept(File f) {
@@ -612,6 +623,12 @@ public class IDE extends JFrame {
 	
 	
 	public boolean actionExit(){
+		properties.put("frame-x", ""+getX());
+		properties.put("frame-y", ""+getY());
+		properties.put("frame-w", ""+getWidth());
+		properties.put("frame-h", ""+getHeight());
+		properties.put("divider", ""+split.getDividerLocation());
+		
 		try{
 			properties.store(new FileOutputStream(propertyFile), ""+new Date());
 		}
@@ -714,13 +731,11 @@ public class IDE extends JFrame {
 		JOptionPane.showMessageDialog(this, label,
 //				
 				"About RhinoCanvasIDE", JOptionPane.PLAIN_MESSAGE);
-		
-		
 	}
 	
 	
 	public void processKeyEvent(KeyEvent ke){
-		System.out.println("KE:"+ke);
+	//	System.out.println("KE:"+ke);
 		super.processKeyEvent(ke);
 		
 		
