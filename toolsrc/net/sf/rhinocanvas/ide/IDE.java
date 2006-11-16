@@ -6,8 +6,6 @@ package net.sf.rhinocanvas.ide;
 
 import java.awt.BorderLayout;
 import java.awt.Container;
-import java.awt.EventQueue;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
@@ -21,13 +19,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.io.Writer;
 import java.lang.reflect.Method;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Date;
-import java.util.Hashtable;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -43,7 +37,6 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
@@ -51,25 +44,17 @@ import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
+import javax.swing.text.JTextComponent;
 
-import org.mozilla.javascript.Callable;
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.ContextAction;
-import org.mozilla.javascript.RhinoException;
-import org.mozilla.javascript.Script;
-import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.tools.ToolErrorReporter;
-
-import org.mozilla.javascript.tools.shell.Main;
 import org.ujac.ui.editor.CaretPositionEvent;
 import org.ujac.ui.editor.CaretPositionListener;
 
-import sun.reflect.ReflectionFactory.GetReflectionFactoryAction;
 
 public class IDE extends JFrame {
 	
 	static int runNumber;
-
+	Runtime runtime = new RhinoRuntime();
+	JTextComponent console = runtime.getConsole();
 	
 	class ReflectiveAction extends AbstractAction{
 
@@ -114,92 +99,10 @@ public class IDE extends JFrame {
 	JTabbedPane tabPane = new JTabbedPane();
 	JFileChooser fileChooser = new JFileChooser();
 	JLabel status = new JLabel();
-	ConsoleTextArea console = new ConsoleTextArea(new String[0]);
 	
 	JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tabPane, new JScrollPane(console));
 	Properties properties = new Properties();
 
-	Hashtable intervals = new Hashtable();
-	private int intervalId;
-
-	class Executor implements ContextAction, Runnable {
-
-		String scriptText;
-		Context context;
-		int time;
-		int run;
-		boolean loop;
-		
-		Executor(String scriptText){
-			this.scriptText = scriptText;
-		}
-		
-		Executor(String scriptText, Context context, int time, boolean loop){
-			this(scriptText);
-			this.context = context;
-			this.time = time;		
-			this.run = runNumber;
-			this.loop = loop;
-		}
-		
-		public void run(){
-			do{
-				try {
-					Thread.sleep(time);
-				} catch (InterruptedException e) {
-				// Auto-generated catch block
-					throw new RuntimeException(e);
-				}
-				
-				if(run != runNumber){
-					break;
-				}
-				
-				if(EventQueue.isDispatchThread()){
-					run(Context.enter());
-				}
-				else{
-					try {
-						EventQueue.invokeAndWait(new Executor(scriptText, context, 0, false));
-					} catch (Exception e) {
-						
-						e.printStackTrace();
-					}
-				}
-			}
-			while(loop);
-		}
-		
-		
-		public Object run(Context cx) {
-			
-			 Script script = cx.compileString(scriptText ,
-                    getCurrentTab().title, 1, null);
-			 
-			 Object result = Main.evaluateScript(script, cx, Main.getGlobal());
-			 PrintStream ps = Main.getGlobal().getErr();
-			 
-			 if (result != Context.getUndefinedValue()) {
-		            try {
-		            	ps.println();
-		                ps.println(Context.toString(result));
-		                ps.print("js> ");
-		                ps.flush();
-		            } catch (RhinoException rex) {
-		                ToolErrorReporter.reportException(
-		                    cx.getErrorReporter(), rex);
-		            }
-		        }
-			 
-			 
-			 return result;
-		 }
-	}
-	
-	
-	void exec(String scriptText){
-		Main.shellContextFactory.call(new Executor(scriptText));
-	}
 	
 	
 	public IDE(){
@@ -296,10 +199,6 @@ public class IDE extends JFrame {
 		
 		addTab(null);
 //		addTab(new File("/home/haustein/eclipse/rhino-canvas/samples/simple.js"));
-		
-		
-        console.setRows(24);
-        console.setColumns(80);
         
         console.addFocusListener(new FocusListener(){
 
@@ -356,62 +255,8 @@ public class IDE extends JFrame {
 				actionExit();
 			}
 		});
-		setVisible(true);
 		
-		Main.getGlobal().init(Main.shellContextFactory);
-		
-		 Main.setIn(console.getIn());
-		 Main.setOut(console.getOut());
-		 Main.setErr(console.getErr());
-	        
-		 exec("importPackage(Packages.net.sf.rhinocanvas.js)");
-		 
-//		 exec("defineClass('net.sf.rhinocanvas.Canvas'); "+
-//		 "defineClass('net.sf.rhinocanvas.Image'); "+
-//		 "defineClass('net.sf.rhinocanvas.CanvasRenderingContext2D');");
-//	        
-	        Main.getGlobal().defineProperty("setTimeout", new Callable(){
-				// todo: allow function parameter instead of string (!!!)
-
-				public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-					new Thread(new Executor((String) args[0], cx, ((Number) args[1]).intValue(), false)).start();
-					return null;
-				}
-	        	
-	        }, 0);
-
-	        Main.getGlobal().defineProperty("setInterval", new Callable(){
-
-				public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-					// todo: allow function parameter instead of string (!!!)
-					Executor e = new Executor((String) args[0], cx, ((Number) args[1]).intValue(), true);
-					Integer id = new Integer(intervalId++);
-					intervals.put(id, e);
-					new Thread(e).start();
-					return id;
-				}
-	        	
-	        }, 0);
-
-	        Main.getGlobal().defineProperty("clearInterval", new Callable(){
-
-				public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-					// todo: allow function parameter instead of string (!!!)
-					Integer id = new Integer(((Number) args[0]).intValue());
-					Executor e = (Executor) intervals.get(id);
-					e.loop = false;
-					intervals.remove(id);
-					return null;
-				}
-	        	
-	        }, 0);
-
-	        
-	        
-	        
-	        
-	        
-	        Main.main(new String[0]);
+		setVisible(true);	
 	}
 	
 	protected void openFile(File file) {
@@ -651,9 +496,9 @@ public class IDE extends JFrame {
 		Tab tab = getCurrentTab();
 		if(tab != null){
 			if(tab.file != null){
-				Main.getGlobal().defineProperty("documentBase", tab.file.toURI().toString(), 0);
+				runtime.setSource(tab.file.toURI().toString());
 			}
-			exec(tab.editor.getText());
+			runtime.exec(tab.editor.getText());
 		}
 	}
 	
@@ -696,9 +541,7 @@ public class IDE extends JFrame {
 
 	
 	public void actionTerminate(){
-		runNumber++;
-		
-		intervals = new Hashtable();
+		runtime.stop();
 	}
 	
 	public void actionAbout(){
