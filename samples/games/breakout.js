@@ -183,6 +183,7 @@ function loadmap(){
         }
       }
     }
+    ctx.fillStyle="black";
     if(status == -1){
        ctx.textStyle.textAlign="center";
        ctx.textStyle.verticalAlign="bottom";

@@ -29,7 +29,7 @@ class RhinoScriptRunner implements ContextAction, Runnable {
 	
 
 	public void run(){
-		run(context);
+		run(Context.enter(context));
 	}
 	
 	

@@ -15,10 +15,11 @@
 <table width="100%">
 <tr>
 <td valign="top">
-There have been a lot of requests for a <em>drawString</em>() method in the Canvas API
-on the <a href="http://www.whatwg.org/mailing-list">WHATWG mailing list</a>. 
-Unfortunately, adding a <em>drawString</em>() method is not as simple as it may seem;
-there are several more or less complex requirements that need to be taken into account:
+<p>There have been a lot of requests for a <em>drawString</em>() method in the Canvas API
+on the <a href="http://www.whatwg.org/mailing-list">WHATWG mailing list</a>.</p> 
+
+<p>Unfortunately, adding a <em>drawString</em>() method is not as simple as it may seem;
+there are several more or less complex requirements that need to be taken into account:</p>
 
 <dl>
  <dt>Accessability</dt>
@@ -141,14 +142,27 @@ by Andrew Fedoniouk.</p>
 
 <p>This powerful approach was originally 
 <a href="http://lists.whatwg.org/htdig.cgi/whatwg-whatwg.org/2006-October/007381.html">suggested 
-by Gervase Markham</a>. Despite its beauty, some hard problems remain, in particular 
+by Gervase Markham</a>. The basic idea is to use the built-in HTML renderer to render a given 
+subtree to an image object.</p>
+
+<p>drawElement(e) would be a nice addition for the Canvas API, too, but it does not 
+replace drawString(), so it should be discussed separately:</p>
+
+<ul>
+<li>In contrast to the API sketched below, the drawElement proposal does not provide
+access to the metrics of the selected font. However, access to font metrics is necessary to
+address the accessability and I18N requirements.</li>
+<li>Rendering to an
+</ul>
+
+<!-- Despite its beauty, some hard problems remain, in particular 
 CSS inheritance rules for elements drawn out of context, and embedded objects such as 
 images, Canvas elements, or Forms. The proposal seems very appealing in particular for 
 bulk text. Bulk text, however, is probably better placed in the main document for various 
 reasons, including accessability. Using drawElement()  for dynamic content (scores, labels 
 in maps retreived from a server) seems problematic, and there is no simple way to obtain 
 text metrics at a fine-grained level. Also, this approach does not help when the
-Canvas API is used outside of the browser context, where no DOM is available.</p>
+Canvas API is used outside of the browser context, where no DOM is available.</p>  -->
  
 
 <h3>Minimalist Approach</h3>

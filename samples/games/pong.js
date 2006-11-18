@@ -90,6 +90,14 @@ function renderPlayarea()
 	playarea.fillStyle = pa['background'];
 	playarea.strokeStyle = pa['foreground'];
 	playarea.fillRect(0,0, pa['width'], pa['height']);
+
+
+   // playarea.textStyle.textAlign="right";
+   // playarea.textStyle.verticalAlign="top";
+    playarea.fillStyle = "red";
+  
+ 	playarea.drawString(200, 0, ""+player_1_scr);
+
 	
 	//move paddles
 	if(player_1_direction != null)
@@ -117,15 +125,18 @@ function renderPlayarea()
 	
 	playarea.fillStyle = pa['foreground'];
 	playarea.fill();
+
+	playarea.beginPath();
 	
 	//redraw divider
 	playarea.lineWidth = divider['width'];
-	playarea.lineTo(divider['pos'], 0);
+	playarea.moveTo(divider['pos'], 0);
 	playarea.lineTo(divider['pos'], pa['height'] = 200);
 	playarea.lineWidth = 1;
 	
 	playarea.stroke();
 	playarea.closePath();
+
 }
 
 function testCollisions()
@@ -172,6 +183,7 @@ function setScore(p)
 	if(p == player_1)
 	{
 		player_1_scr++;
+        
 		//p1_scr.firstChild.nodeValue = player_1_scr;
 	}
 	if(p == player_2)

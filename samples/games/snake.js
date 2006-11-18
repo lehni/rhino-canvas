@@ -7,30 +7,30 @@ var blockLength=10;
 var count = 1;
 var score=0;
 
-var snakePos = new Array(arenaWidth);
-for (var i = 0; i < arenaWidth; ++i)
-	snakePos[i] = new Array(arenaHeight);
-
-snakePos[10][10] = count;
 var positionx = 10;
 var positiony = 10;
 	
 var arena=new Array(arenaWidth);
+var snakePos = new Array(arenaWidth);
 
-for (var i=0; i<arenaWidth; i++)
+for (var i=0; i<arenaWidth; i++){
 	arena[i]=new Array(arenaHeight);
-	
+	snakePos[i] = new Array(arenaHeight);
+}
 
-for (var i=0; i<arenaWidth; i++)
-{
-	for(var j=0; j<arenaHeight; j++)
-	{
+
+
+for (var i=0; i<arenaWidth; i++) {
+	for(var j=0; j<arenaHeight; j++) {
 		if (i==0 || j==0 || i==arenaWidth-1 || j==arenaHeight-1)
 			arena[i][j]=1;
 		else
 			arena[i][j]=0;
 	}
 }
+snakePos[10][10] = count;
+
+
 
 var ctx;
 
@@ -45,15 +45,13 @@ var tailLength=2;
 var beforePauseKey;
 
 
-function moveSnake()
-{
+function moveSnake() {
 	if (movement == null)
 		return;
 		
 	++count;
 
-	switch(movement)
-	{
+	switch(movement) {
 		case "left":
 			--positionx;
 			break;
@@ -72,19 +70,16 @@ function moveSnake()
 
 	checkCollision();
 	snakePos[positionx][positiony] = count;
-
 }
 
-function checkCollision()
-{
+function checkCollision(){
 	if ( snakePos[positionx][positiony] != null && snakePos[positionx][positiony] > count - tailLength )
 		youLose();
 
 	if ( arena[positionx][positiony] == 1)
 		youLose();
 		
-	if ( arena[positionx][positiony] == 2) // Checking for FOOOOOOD!
-	{
+	if ( arena[positionx][positiony] == 2){ // Checking for FOOOOOOD!
 		tailLength++;
 		score++;
 		//document.getElementById("score").innerHTML="<font style='color: red; font-weight: bold'>You lose</font>";
@@ -94,56 +89,41 @@ function checkCollision()
 	}
 }
 
-function loadMap()
-{
+function loadMap(){
 
-if (gamestatus==-1)
-//	document.getElementById("mapDiv").innerHTML="<canvas id=\"map\" width=\""+arenaWidth*blockLength+"\" height=\""+arenaHeight*blockLength+"\"></canvas>";
-//	canvas=document.getElementById("map");
-	if (canvas.getContext)
-	{
+  if (gamestatus==-1)
+    //	document.getElementById("mapDiv").innerHTML="<canvas id=\"map\" width=\""+arenaWidth*blockLength+"\" height=\""+arenaHeight*blockLength+"\"></canvas>";
+    //	canvas=document.getElementById("map");
+
+	//if (canvas.getContext) {
 		ctx= canvas.getContext('2d');
-		ctx.fillStyle="#FF6600";
+		ctx.fillStyle=  "#FF6600";
 		ctx.fillRect(0,0,arenaWidth*blockLength,arenaHeight*blockLength);
-	}
+	//}
 
-	for (var i=0; i<arenaWidth; i++)
-	{
-		for (var j=0; j<arenaHeight; j++)
-		{
-			if (arena[i][j]==1)
-			{
-				ctx.fillStyle="#0000FF";
+	for (var i=0; i<arenaWidth; i++) {
+		for (var j=0; j<arenaHeight; j++) {
+			if (arena[i][j]==1) {
+				ctx.fillStyle = "#0000FF";
 				ctx.fillRect(i*blockLength,j*blockLength,blockLength,blockLength);
 			}
-			if (arena[i][j]==2)
-			{
+			if (arena[i][j]==2) {
 				ctx.fillStyle = (count % 2) ? "#FF0000" : "#FFFFFF";
 				ctx.fillRect(i*blockLength,j*blockLength,blockLength,blockLength);
 			}
 		}
-	
 	}
 }
 
-function loadSnake()
-{
-	ctx.fillStyle="#0000FF";
-	var i = count;
-	do
-	{
-		for (var j=0; j<arenaWidth; j++)
-		{
-			for (var k=0; k<arenaHeight; k++)
-			{
-				if (snakePos[j][k]==i)
-					ctx.fillRect(j*blockLength, k*blockLength, blockLength, blockLength);
-			}
-		}
-	    --i;
-	}
-	while ( i >= count - tailLength )
 
+function loadSnake() {
+	ctx.fillStyle="#0000FF";
+	for (var j=0; j<arenaWidth; j++) {
+		for (var k=0; k<arenaHeight; k++) {
+			if (snakePos[j][k] >= count - tailLength)
+				ctx.fillRect(j*blockLength, k*blockLength, blockLength, blockLength);
+		}
+	}
 }
 
 
