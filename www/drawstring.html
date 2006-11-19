@@ -11,12 +11,21 @@
 <h1>CanvasRenderingContext2D.drawString()</h1>
 
 <a name="intro" ></a>
-<h2>Introduction</h2>
+<h2>What is the Problem?</h2>
+
+<p>Currently, the Canvas API does not include the ability to draw text strings. That makes
+several potentional Canvas applications, such as dynamic graphs or maps, more complex than
+neccessary. Instead of using the text facilities of the platform, Canvas applications 
+need to bundle their own vector fonts or use inaccessible pre-rendered images for 
+text display.</p>
+
+<h2>How can this Situation be Improved?</h2>
+
+
 <table width="100%">
 <tr>
 <td valign="top">
-<p>There have been a lot of requests for a <em>drawString</em>() method in the Canvas API
-on the <a href="http://www.whatwg.org/mailing-list">WHATWG mailing list</a>.</p> 
+
 
 <p>Unfortunately, adding a <em>drawString</em>() method is not as simple as it may seem;
 there are several more or less complex requirements that need to be taken into account:</p>
@@ -134,7 +143,7 @@ future versions may want to add support for more CSS properties.</p>
 <h2>Existing Proposals</h2>
 
 <p>In addition to solutions based on a separate Font or TextStyle object, there 
-were two alternative proposals, drawElement(e) and a more minimalistic approach 
+were two alternative proposals, <em>drawElement(e)</em> and a more minimalistic approach 
 by Andrew Fedoniouk.</p>
 
 
@@ -143,17 +152,22 @@ by Andrew Fedoniouk.</p>
 <p>This powerful approach was originally 
 <a href="http://lists.whatwg.org/htdig.cgi/whatwg-whatwg.org/2006-October/007381.html">suggested 
 by Gervase Markham</a>. The basic idea is to use the built-in HTML renderer to render a given 
-subtree to an image object.</p>
+subtree to an image object. 
 
-<p>drawElement(e) would be a nice addition for the Canvas API, too, but it does not 
-replace drawString(), so it should be discussed separately:</p>
+<p>While <em>drawElement(e)</em> would also be a nice addition for the Canvas API, it 
+does not replace a simple basic API for drawing labels with query capabilities:</p>
 
 <ul>
 <li>In contrast to the API sketched below, the drawElement proposal does not provide
-access to the metrics of the selected font. However, access to font metrics is necessary to
+access to the metrics of the selected font. Access to font metrics is necessary to
 address the accessability and I18N requirements.</li>
-<li>Rendering to an
+<li>Rendering to an intermediate image is resource consuming.</li>
+<li>The constructing of an intermediate DOM node just to display a label makes the
+programs code less readable.
 </ul>
+
+<p>Since drawElement(e) does not replace drawString(), its inclusion (specification, problems)
+should be discussed separately.</p>
 
 <!-- Despite its beauty, some hard problems remain, in particular 
 CSS inheritance rules for elements drawn out of context, and embedded objects such as 
@@ -181,17 +195,16 @@ Graphics.drawText(x,y,string);
 <p>The advantage of this approach is that it does not require a separate <em>Font</em> 
 or <em>TextStyle</em> object. However, it seems difficult to remember the correct
 order of parameters in setFont(). Also, when more font or text properties are added,
-the GraphicsContext class may get cluttered, and save() and restore() may become 
-inefficient.</p>
+the GraphicsContext class may get cluttered too much.</p>
 
 
 <a name="api"></a>
-<h2>Experimental API Design</h2>
+<h2>API Proposal</h2>
 
-<p>Because of the issues described above, I think a simple, string-based solution 
-with a separate TextStyle object is the best approach to drawString(). After some 
-iteration on the WHATWG list, I have implemented the following API in 
-<a href="../index.html">rhino-canvas</a>:</p>
+<p>Because of the issues described above, <a href="../index.html">rhino-canvas</a>
+implements a simple, string-based solution  with a separate TextStyle object:</p>
+
+
 
 <pre>
 interface CanvasRenderingContext2D {
@@ -239,9 +252,33 @@ interface CanvasTextStyle {
 };
 </pre>
 
-<p>The Rhino-Canvas implementation may be still subject to changes, based
-on disscussion on the WHATWG list or different drawString implementations
-by any major browser vendor.</p>
+<h2>Processing Model and Error Handling</h2>
+
+<p>If the requested font is not available, the broser choses the best fit, determined by
+the CSS font selection algorithm. All query methods return properties of the actually
+selected font, not the requested font.</p>
+
+<h2>Why would Browsers Implement this Feature?</h2>
+
+<p>There is much user demand for this feature on the WHATWG mailing list, and the feature 
+completes the 2D canvas API. Moreover, it is simple and straight-forward to implement; 
+it can be mapped more or less directly to the underlying graphics 
+API of the platform. </p>
+
+
+<h2>Why would Authors Use this Feature?</h2>
+
+<p>Using this feature would simplify several graph- and map related applications. 
+In the long term, authors will prefer this feature over alternatives (inaccessible
+images, vector fonts, proprietary plugins) because it provides a better user experience (loading
+time, accessability), combined with a simpler programming model.</p>
+
+
+<h2>What Evidence is there that this Feature is Desparately Needed?</h2>
+
+<p>There have been a lot of requests for a <em>drawString</em>() method in the Canvas API
+on the <a href="http://www.whatwg.org/mailing-list">WHATWG mailing list</a>.</p> 
+
 
 </body>
 </html>
