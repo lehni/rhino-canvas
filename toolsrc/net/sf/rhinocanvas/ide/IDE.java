@@ -46,6 +46,9 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.text.JTextComponent;
 
+import net.sf.rhinocanvas.rt.RhinoRuntime;
+import net.sf.rhinocanvas.rt.Runtime;
+
 import org.ujac.ui.editor.CaretPositionEvent;
 import org.ujac.ui.editor.CaretPositionListener;
 

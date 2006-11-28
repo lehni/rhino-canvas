@@ -9,7 +9,8 @@ function draw() {
  ctx.fillRect (30, 30, 55, 50);
 }
 
-
-canvas = new Image(100, 100);
-window = new Window("simple", canvas);
+if(!canvas){
+  canvas = new Image(100, 100);
+  window = new Window("simple", canvas);
+}
 draw();

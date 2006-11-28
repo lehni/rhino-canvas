@@ -1,9 +1,10 @@
 /**
  * 
  */
-package net.sf.rhinocanvas.ide;
+package net.sf.rhinocanvas.rt;
 
 import java.io.PrintStream;
+
 
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextAction;

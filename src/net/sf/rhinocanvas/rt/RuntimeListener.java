@@ -1,4 +1,4 @@
-package net.sf.rhinocanvas.ide;
+package net.sf.rhinocanvas.rt;
 
 public interface RuntimeListener {
 	

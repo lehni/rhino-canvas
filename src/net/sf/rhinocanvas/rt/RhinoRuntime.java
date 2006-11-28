@@ -1,9 +1,11 @@
-package net.sf.rhinocanvas.ide;
+package net.sf.rhinocanvas.rt;
 
 import java.util.Hashtable;
 
 import javax.swing.text.JTextComponent;
 
+
+import net.sf.rhinocanvas.ide.ConsoleTextArea;
 
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
@@ -14,19 +16,16 @@ public class RhinoRuntime implements Runtime {
 
 	Hashtable intervals = new Hashtable();
 	private int intervalId;
-	ConsoleTextArea console = new ConsoleTextArea(new String[0]);
-
 
 	int runNumber;
 	String currentUrl;
+	ConsoleTextArea console;
+	
 	
 	
 	public RhinoRuntime(){
 		Main.getGlobal().init(Main.shellContextFactory);
 		
-		Main.setIn(console.getIn());
-		Main.setOut(console.getOut());
-		Main.setErr(console.getErr());
 	        
 		exec("importPackage(Packages.net.sf.rhinocanvas.js)");
 		 
@@ -68,8 +67,6 @@ public class RhinoRuntime implements Runtime {
 			}
 		}, 0);
 
-		console.setRows(24);
-		console.setColumns(80);
 	        
 		new Thread(new Runnable(){
 			public void run(){
@@ -78,6 +75,10 @@ public class RhinoRuntime implements Runtime {
 		}).start();
 	}
 
+	public void defineProperty(String key, Object value){
+		Main.getGlobal().defineProperty(key, value, 0);
+	}
+	
 	public void setSource(String url){
 		this.currentUrl = url;
 		Main.getGlobal().defineProperty("documentBase", url, 0);
@@ -89,6 +90,15 @@ public class RhinoRuntime implements Runtime {
 	}
 
 	public JTextComponent getConsole(){
+		if(console == null){
+			ConsoleTextArea console	= new ConsoleTextArea(new String[0]);
+			Main.setIn(console.getIn());
+			Main.setOut(console.getOut());
+			Main.setErr(console.getErr());
+			console.setRows(24);
+			console.setColumns(80);
+			
+		}
 		return console;
 	}
 	
