@@ -1,6 +1,6 @@
 <project name="rhino-canvas" basedir="." default="build" >
 
-  <property name="version" value="0.31" />	
+  <property name="version" value="0.32" />	
 	
   <target name="init">
   	<delete dir="tmpclasses" />
@@ -14,18 +14,26 @@
 	 <unzip dest="tmpclasses" overwrite="true" src="lib/batik-ext-awt.jar" />
   </target>
 	 	
-  <target name="compile" depends="init,unpack">
-  	<javac srcdir="src"
-  		
+  <target name="build-applet" depends="init,unpack">
+      <javac srcdir="src"
   	       destdir="tmpclasses"
   	       includes="**/*.java"
   		   source="1.5"
   		   target="1.5">
   	    </javac>
-	  </target>
+
+  	 
+  	<jar jarfile="dist/rhino-canvas-applet.jar"
+         basedir="tmpclasses"
+  		excludes="org/mozilla/javascript/optimizer/*"
+    	manifest="toolsrc/META-INF/manifest.mf"
+     />
+
+  </target>
 	
-	 <target name="compile-tools" depends="compile">
-	  	<javac srcdir="toolsrc" classpath="lib/apple-eawt-stub.jar"
+  <target name="build-ide" depends="build-applet">
+
+  	<javac srcdir="toolsrc" classpath="lib/apple-eawt-stub.jar"
 	  		
 	  	       destdir="tmpclasses"
 	  	       includes="**/*.java"
@@ -38,20 +46,19 @@
 	 		  <include name="**/*.png"/></fileset>
 	 		</copy>
 	 	    
-		  </target>	
-	
-  <target name="ide-jar" depends="compile-tools">
-    <jar jarfile="dist/rhino-canvas-ide-${version}.jar"
+	<jar jarfile="dist/rhino-canvas-ide.jar"
          basedir="tmpclasses"
     	manifest="toolsrc/META-INF/manifest.mf"
      />
   </target>
 	
 	
-  <target name="package" depends="ide-jar" >
+  <target name="package" depends="build-ide" >
   	<mkdir dir="dist/rhino-canvas-ide-${version}"/>
   	<copydir dest="dist/rhino-canvas-ide-${version}/samples" src="samples"></copydir>
-  	<copy file="dist/rhino-canvas-ide-${version}.jar" todir="dist/rhino-canvas-ide-${version}" />
+  	<copy file="dist/rhino-canvas-ide.jar" todir="dist/rhino-canvas-ide-${version}" />
+  	<copy file="dist/rhino-canvas-applet.jar" todir="dist/rhino-canvas-ide-${version}" />
+  	
   	
   <echo append="false" file="dist/rhino-canvas-ide-${version}/ide.cmd">java -jar rhino-canvas-ide-${version}.jar
 </echo>
