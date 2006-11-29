@@ -1,0 +1,16 @@
+Applet -- but how?
+
+- determine usual pattern
+-- document? window? 
+-- rename window to frame?
+-- let window point to the current window, so setOnKeydown etc. work consistently?
+-- document.getElementById("..")
+
+- predefine a canvas image?
+- where to get key events (canvas image? Applet element?)
+- define Canvas object name via applet parameter?
+
+
+Done
+
+29.11.	the rhino tools shell is poised with static stuff, expand Runtime 

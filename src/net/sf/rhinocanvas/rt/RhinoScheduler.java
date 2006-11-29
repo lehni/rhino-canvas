@@ -19,19 +19,18 @@ class RhinoScheduler implements Runnable {
 	private final RhinoRuntime runtime;
 	
 	RhinoScriptRunner runner;
-	Context context;
 	int time;
 	int run;
 	boolean loop;
 
 	
-	RhinoScheduler(RhinoRuntime runtime, Object command, Context context, int time, boolean loop){
+	RhinoScheduler(RhinoRuntime runtime, Object command, int time, boolean loop){
 		this.runtime = runtime;
 		this.time = time;		
 		this.run = this.runtime.runNumber;
 		this.loop = loop;
 		
-		runner = new RhinoScriptRunner(runtime, command, context);
+		runner = new RhinoScriptRunner(runtime, command);
 	}
 	
 	public void run(){

@@ -10,13 +10,11 @@ import java.net.URISyntaxException;
 
 import javax.imageio.ImageIO;
 
+import net.sf.rhinocanvas.rt.RhinoRuntime;
+
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
-import org.mozilla.javascript.JavaScriptException;
 import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.ScriptableObject;
-import org.mozilla.javascript.tools.shell.Global;
-import org.mozilla.javascript.tools.shell.Main;
 
 
 
@@ -26,7 +24,6 @@ public class Image  {
 	BufferedImage image;
 	String src;
 	Function onload;
-	Context context = Context.getCurrentContext();
 	boolean doNotify;
 	
 	public Image(){
@@ -34,7 +31,7 @@ public class Image  {
 	}
 	
 	public Image(int width, int height) {
-    
+		
     	image = new BufferedImage(width, height, BufferedImage.TYPE_4BYTE_ABGR);
     	Graphics g = image.getGraphics();
     	g.setColor(Color.WHITE);
@@ -45,7 +42,12 @@ public class Image  {
 	public void setSrc(String url){
 		this.src = url;
 		try {
-			String base = (String) Main.getGlobal().get("documentBase", Main.getGlobal());
+
+			RhinoRuntime runtime = (RhinoRuntime) Context.getCurrentContext().getThreadLocal("runtime");
+
+			Scriptable scope = runtime.getScope();
+			
+			String base = (String) scope.get("documentBase", scope);
 			try {
 				URI baseUri = new URI(base);
 				image = ImageIO.read(baseUri.resolve(url).toURL());
@@ -55,7 +57,7 @@ public class Image  {
 			}
 			
 			if(onload != null){
-				onload.call(context, onload, onload, new Object[0]);
+				onload.call(Context.getCurrentContext(), onload, onload, new Object[0]);
 			}
 			else{
 				doNotify = true;
@@ -76,7 +78,7 @@ public class Image  {
 		this.onload = onload;
 		if(doNotify){
 			doNotify = false;
-			onload.call(context, onload, onload, new Object[0]);
+			onload.call(Context.getCurrentContext(), onload, onload, new Object[0]);
 		}
 	}
 	

@@ -1,4 +1,4 @@
-package net.sf.rhinocanvas.ide;
+package net.sf.rhinocanvas.rt;
 
 public class ConsoleTextArea extends org.mozilla.javascript.tools.shell.ConsoleTextArea{
 

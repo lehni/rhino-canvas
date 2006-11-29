@@ -19,22 +19,24 @@ class RhinoScriptRunner implements ContextAction, Runnable {
 	
 	private final RhinoRuntime runtime;
 	private Object script;
-	private Context context;
+	//private Context context;
 
 	
-	RhinoScriptRunner(RhinoRuntime runtime, Object script, Context context){
+	RhinoScriptRunner(RhinoRuntime runtime, Object script){
 		this.runtime = runtime;
 		this.script = script;
-		this.context = context;
+		//this.context = context;
 	}
 	
 
 	public void run(){
-		run(Context.enter(context));
+		run(Context.enter());
 	}
 	
 	
 	public Object run(Context cx) {
+		
+		cx.putThreadLocal("runtime", runtime);
 		
 		if(script instanceof String){
 			this.script = cx.compileString((String) script,
@@ -44,26 +46,27 @@ class RhinoScriptRunner implements ContextAction, Runnable {
 		
 		 if(script instanceof Script){
 		 
-			 Object result = Main.evaluateScript((Script) script, cx, Main.getGlobal());
-			 PrintStream ps = Main.getGlobal().getErr();
-			 
-			 if (result != Context.getUndefinedValue()) {
-	            try {
-	            	ps.println();
-	                ps.println(Context.toString(result));
-	                ps.print("js> ");
-	                ps.flush();
-	            } catch (RhinoException rex) {
-	                ToolErrorReporter.reportException(
-	                    cx.getErrorReporter(), rex);
-	            }
-	        }
-		 
+			 Object result = ((Script) script).exec(cx, runtime.scope);
+	//		 Object result = Main.evaluateScript((Script) script, cx, Main.getGlobal());
+//			 PrintStream ps = Main.getGlobal().getErr();
+//			 
+//			 if (result != Context.getUndefinedValue()) {
+//	            try {
+//	            	ps.println();
+//	                ps.println(Context.toString(result));
+//	                ps.print("js> ");
+//	                ps.flush();
+//	            } catch (RhinoException rex) {
+//	                ToolErrorReporter.reportException(
+//	                    cx.getErrorReporter(), rex);
+//	            }
+//	        }
+//		 
 			 return result;
 		 }
 		 else {
 			 Function fn = (Function) script;
-			 return fn.call(context, fn, fn, new Object[0]);
+			 return fn.call(cx, fn, fn, new Object[0]);
 		 }
 	 }
 }

@@ -40,6 +40,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
+import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -57,7 +58,7 @@ public class IDE extends JFrame {
 	
 	static int runNumber;
 	Runtime runtime = new RhinoRuntime();
-	JTextComponent console = runtime.getConsole();
+	JTextComponent console = new JTextArea(); // runtime.getConsole();
 	
 	class ReflectiveAction extends AbstractAction{
 

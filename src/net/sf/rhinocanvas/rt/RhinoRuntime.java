@@ -4,13 +4,10 @@ import java.util.Hashtable;
 
 import javax.swing.text.JTextComponent;
 
-
-import net.sf.rhinocanvas.ide.ConsoleTextArea;
-
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
+import org.mozilla.javascript.ImporterTopLevel;
 import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.tools.shell.Main;
 
 public class RhinoRuntime implements Runtime {
 
@@ -20,11 +17,42 @@ public class RhinoRuntime implements Runtime {
 	int runNumber;
 	String currentUrl;
 	ConsoleTextArea console;
+	Scriptable scope;
 	
-	
+	public Scriptable getScope(){
+		return scope;
+	}
 	
 	public RhinoRuntime(){
-		Main.getGlobal().init(Main.shellContextFactory);
+		Context context = Context.enter();
+		try {
+			// Initialize the standard objects (Object, Function, etc.)
+			// This must be done before scripts can be executed. Returns
+			// a scope object that we use in later calls.
+			
+			scope = new ImporterTopLevel(context);
+		 
+			// Collect the arguments into a single string.
+//			String s = "";
+//		  	            for (int i=0; i < args.length; i++) {
+//		                  s += args[i];
+//		              }
+//		  
+//		              // Now evaluate the string we've colected.
+//		  	            Object result = cx.evaluateString(scope, s, "<cmd>", 1, null);
+//		  
+//		 	             // Convert the result to a string and print it.
+//		              System.err.println(cx.toString(result));
+//		  
+//		          } finally {
+//		              // Exit from the context.
+//		              Context.exit();
+//		          }
+//		
+//		
+		
+		
+//		Main.getGlobal().init(Main.shellContextFactory);
 		
 	        
 		exec("importPackage(Packages.net.sf.rhinocanvas.js)");
@@ -33,29 +61,29 @@ public class RhinoRuntime implements Runtime {
 //		 "defineClass('net.sf.rhinocanvas.Image'); "+
 //		 "defineClass('net.sf.rhinocanvas.CanvasRenderingContext2D');");
 //	        
-		Main.getGlobal().defineProperty("setTimeout", new Callable(){
+		
+		 defineProperty("setTimeout", new Callable(){
 				// todo: allow function parameter instead of string (!!!)
 
 			public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
-				new Thread(new RhinoScheduler(RhinoRuntime.this, args[0], cx, ((Number) args[1]).intValue(), false)).start();
+				new Thread(new RhinoScheduler(RhinoRuntime.this, args[0], ((Number) args[1]).intValue(), false)).start();
 				return null;
 			}
-	        	
-		}, 0);
+		});
 
-		Main.getGlobal().defineProperty("setInterval", new Callable(){
+		defineProperty("setInterval", new Callable(){
 
 			public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
 					// todo: allow function parameter instead of string (!!!)
-				RhinoScheduler e = new RhinoScheduler(RhinoRuntime.this, args[0], cx, ((Number) args[1]).intValue(), true);
+				RhinoScheduler e = new RhinoScheduler(RhinoRuntime.this, args[0], ((Number) args[1]).intValue(), true);
 				Integer id = new Integer(intervalId++);
 				intervals.put(id, e);
 				new Thread(e).start();
 				return id;
 			}
-		}, 0);
+		});
 
-		Main.getGlobal().defineProperty("clearInterval", new Callable(){
+		defineProperty("clearInterval", new Callable(){
 
 			public Object call(Context cx, Scriptable scope, Scriptable thisObj, Object[] args) {
 				// todo: allow function parameter instead of string (!!!)
@@ -65,36 +93,37 @@ public class RhinoRuntime implements Runtime {
 				intervals.remove(id);
 				return null;
 			}
-		}, 0);
-
-	        
-		new Thread(new Runnable(){
-			public void run(){
-				Main.main(new String[0]);
-			}
-		}).start();
+		});
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+		finally{
+			Context.exit();
+		}
 	}
 
 	public void defineProperty(String key, Object value){
-		Main.getGlobal().defineProperty(key, value, 0);
+		scope.put(key, scope, value);
 	}
 	
 	public void setSource(String url){
 		this.currentUrl = url;
-		Main.getGlobal().defineProperty("documentBase", url, 0);
+		defineProperty("documentBase", url);
 	}
 	
 	public Object exec(String expression) {
 		runNumber++;
-		return Main.shellContextFactory.call(new RhinoScriptRunner(this, expression, null));
+
+		return new RhinoScriptRunner(this, expression).run(Context.enter());
 	}
 
 	public JTextComponent getConsole(){
 		if(console == null){
 			ConsoleTextArea console	= new ConsoleTextArea(new String[0]);
-			Main.setIn(console.getIn());
-			Main.setOut(console.getOut());
-			Main.setErr(console.getErr());
+//			Main.setIn(console.getIn());
+//			Main.setOut(console.getOut());
+//			Main.setErr(console.getErr());
 			console.setRows(24);
 			console.setColumns(80);
 			
