@@ -2,7 +2,7 @@
 
 
 canvas = new Image(120, 120);
-window = new Window("Breakout", canvas);
+document = new Frame("Breakout", canvas);
 
 var arena=[];
 var ctx;
@@ -249,7 +249,7 @@ function last(){
   }
 }
 
-window.onkeydown=function(e){
+document.onkeydown=function(e){
 ///if (!e){
 //var e=window.event;
 //}
@@ -277,7 +277,7 @@ window.onkeydown=function(e){
   }
 }
 
-window.onkeyup=function(e){
+document.onkeyup=function(e){
    paddlemovement="null";
 }
 
