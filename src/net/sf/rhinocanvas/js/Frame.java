@@ -1,14 +1,9 @@
 package net.sf.rhinocanvas.js;
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.Graphics;
-import java.awt.Graphics2D;
-import java.awt.JobAttributes;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -23,20 +18,17 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.RootPaneContainer;
 
-import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.NativeObject;
 import org.mozilla.javascript.ScriptableObject;
-import org.mozilla.javascript.tools.shell.Global;
-import org.mozilla.javascript.tools.shell.Main;
 
 
 /*
  * Created on 28/10/2006 by Stefan Haustein
  */
 
-public class Window  {
+public class Frame extends Component {
 	
 	boolean macOS = System.getProperty("mrj.version") != null;
 	RootPaneContainer container;
@@ -44,8 +36,6 @@ public class Window  {
 	JApplet applet;
 	Helper helper;
 	Image content;
-	Function onKeyDown;
-	Function onKeyUp;
 	Context context;
 	
 	
@@ -71,7 +61,7 @@ public class Window  {
 		}
 	}
 
-	Window(RootPaneContainer container, Object content){
+	Frame(RootPaneContainer container, Object content){
 		this.container = container;
 		if(content != null){
 			setContent(content);
@@ -81,68 +71,25 @@ public class Window  {
 		helper = new Helper();
 		helper.setDoubleBuffered(true);
 	    	
-		helper.addMouseListener(new MouseListener(){
-
-			public void mouseClicked(MouseEvent arg0) {}
-			public void mouseEntered(MouseEvent arg0) {}
-			public void mouseExited(MouseEvent arg0) {}
-			public void mouseReleased(MouseEvent arg0) {}
-			public void mousePressed(MouseEvent arg0) {
-				System.out.println("Requesting the damn focus");
-				helper.requestFocus();
-			}
-		});
-	    	
+		EventHelper eh = new EventHelper(helper);
+		helper.addMouseListener(eh);
+		helper.addKeyListener(eh);
 		helper.setFocusable(true);
 	    	
 		helper.addComponentListener(new ComponentAdapter(){
 
 			public void componentResized(ComponentEvent e) {
-				if(helper.getWidth() != Window.this.content.getWidth()||helper.getHeight() != Window.this.content.getHeight() ){
+				if(helper.getWidth() != Frame.this.content.getWidth()||helper.getHeight() != Frame.this.content.getHeight() ){
 
 					BufferedImage newImage = new BufferedImage(helper.getWidth(), helper.getHeight(), BufferedImage.TYPE_4BYTE_ABGR);
 					
 					Graphics g = newImage.getGraphics();
-					g.drawImage(Window.this.content.image, 0, 0, null);
+					g.drawImage(Frame.this.content.image, 0, 0, null);
 						//image.copyData(newImage.getRaster());
-					Window.this.content.image = newImage;
+					Frame.this.content.image = newImage;
 				}
 			}
 		});
-	    	
-		helper.addKeyListener(new KeyListener(){
-
-			public void keyPressed(KeyEvent ke) {
-				System.out.println("pressed Keycode: "+ke.getKeyCode()+" char: "+ke.getKeyChar());
-				if(onKeyDown != null){
-					NativeObject no = new NativeObject();
-					ScriptableObject.putProperty(no, "which", new Double(ke.getKeyCode()));
-					ScriptableObject.putProperty(no, "keyCode", new Double(ke.getKeyCode()));
-						
-					Context.enter(context);
-						
-					onKeyDown.call(context, onKeyDown, onKeyDown, new Object[]{no});
-				}
-			}
-
-			public void keyReleased(KeyEvent ke) {
-//					System.out.println("rel. Keycode: "+ke.getKeyCode()+" char: "+ke.getKeyChar());
-//					System.out.println("pressed Keycode: "+ke.getKeyCode()+" char: "+ke.getKeyChar());
-				if(onKeyUp != null){
-					NativeObject no = new NativeObject();
-					ScriptableObject.putProperty(no, "which", new Double(ke.getKeyCode()));
-					ScriptableObject.putProperty(no, "keyCode", new Double(ke.getKeyCode()));
-						
-					Context.enter(context);
-					
-					onKeyUp.call(context, onKeyUp, onKeyUp, new Object[]{no});
-				}
-			}
-
-			public void keyTyped(KeyEvent ke) {
-				System.out.println("typed Keycode: "+ke.getKeyCode()+" char: "+ke.getKeyChar());
-			}
-	   	});
 	    	
 	    	
 		container.getContentPane().add(BorderLayout.CENTER, helper);  	
@@ -150,15 +97,14 @@ public class Window  {
 	}
 	
 	
-	Window(CanvasApplet applet){
+	Frame(CanvasApplet applet){
 		this((RootPaneContainer) applet, new Image(applet.getWidth(), applet.getHeight()));
 		this.applet = applet;
-		
 	}
 		
 	
 	
-	public Window(String title, Object content) {
+	public Frame(String title, Object content) {
 		this(new JFrame(title), content);  
 		  
 		this.frame = (JFrame) container;
@@ -184,13 +130,6 @@ public class Window  {
 		 helper.repaint();
 	 }
 
-	 public Function getOnkeydown(){
-		 return onKeyDown;
-	 }
-	 
-	 public void setOnkeydown(Function okd){
-		 onKeyDown = okd;
-	 }
 	
 	 public void setResizable(boolean rs){
 		 if(frame != null){
@@ -198,13 +137,6 @@ public class Window  {
 		 }
 	 }
 	 
-	 public Function getOnkeyup(){
-		 return onKeyUp;
-	 }
-	 
-	 public void setOnkeyup(Function oku){
-		 onKeyUp = oku;
-	 }
 	 
 	 
 	 public Object getContent(){

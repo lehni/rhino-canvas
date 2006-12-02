@@ -31,7 +31,7 @@ import net.sf.rhinocanvas.rt.RhinoRuntime;
 
 public class CanvasApplet extends JApplet {
 
-	Window window;
+	Frame window;
 	RhinoRuntime runtime;
 	String scriptUrl;
 	
@@ -40,7 +40,7 @@ public class CanvasApplet extends JApplet {
 
 	public void init(){
 		runtime = new RhinoRuntime();
-		window = new Window(this);
+		window = new Frame(this);
 		runtime.defineProperty("canvas", window.content);
 
 		URI base;

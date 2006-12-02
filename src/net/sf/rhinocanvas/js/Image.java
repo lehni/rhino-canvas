@@ -20,7 +20,7 @@ import org.mozilla.javascript.Scriptable;
 
 public class Image  {
 
-	Window owner;
+	Frame owner;
 	BufferedImage image;
 	String src;
 	Function onload;
