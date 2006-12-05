@@ -46,5 +46,5 @@ function draw() {
 }
 
 canvas = new Image(300, 300);
-new Window("Solar System", canvas);
+new Frame("Solar System", canvas);
 init();

@@ -102,6 +102,6 @@ function clock(){
 
 
 canvas = new Image(150, 150);
-new Window("Clock", canvas);
+new Frame("Clock", canvas);
 init();
 
