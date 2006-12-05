@@ -10,7 +10,7 @@
 
   <target name="unpack" >
 	 <unzip dest="tmpclasses" overwrite="true" src="lib/js.jar" />
-	 <unzip dest="tmpclasses" overwrite="true" src="lib/css4j.jar" />
+	 <unzip dest="tmpclasses" overwrite="true" src="lib/css4j-values.jar" />
 	 <unzip dest="tmpclasses" overwrite="true" src="lib/batik-ext-awt.jar" />
   </target>
 	 	
@@ -18,8 +18,8 @@
       <javac srcdir="src"
   	       destdir="tmpclasses"
   	       includes="**/*.java"
-  		   source="1.5"
-  		   target="1.5">
+  		   source="1.3"
+  		   target="1.3">
   	    </javac>
 
   	 
@@ -37,8 +37,8 @@
 	  		
 	  	       destdir="tmpclasses"
 	  	       includes="**/*.java"
-	  		   source="1.5"
-	  		   target="1.5">
+	  		   source="1.3"
+	  		   target="1.3">
 	  	    </javac>
 	 	
 	 	<copy todir="tmpclasses" >
