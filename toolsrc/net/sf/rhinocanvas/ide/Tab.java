@@ -8,6 +8,7 @@ import java.awt.event.FocusListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
@@ -15,6 +16,7 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 
+import javax.swing.JFileChooser;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
@@ -130,5 +132,115 @@ public class Tab extends JSplitPane {
 		new Thread(new ConsoleHandler(console)).start();
 	}
 
+	
+	public void actionCopy(){
+		if(consoleFocussed){
+			console.copy();
+		}
+		else {
+			editor.copy();
+		}
+	}
+	
+	public void actionPaste(){
+		System.out.println("Paste");
+		if(consoleFocussed){
+			console.paste();
+		}
+		else {
+			editor.paste();
+		}
+	}
+
+	
+	public void actionCut(){
+		if(consoleFocussed){
+			console.cut();
+		}
+		else {
+			editor.cut();
+		}
+	}
+
+	public void actionRun(){
+	//	runNumber++;
+
+		if(file != null){
+				runtime.setSource(file.toURI().toString());
+		}
+		PrintWriter pw = new PrintWriter(console.getOut());
+		try{
+			pw.write(runtime.exec(editor.getText())+"\n>");
+		}
+		catch(Exception e){
+			e.printStackTrace(pw);
+		}
+		pw.flush();
+	}
+	
+	public boolean actionSave(){
+	
+		if(file == null){
+			return actionSaveAs();
+		}
+
+		try{
+			Writer w = new FileWriter(file);
+			w.write(editor.getText());
+			w.close();
+			
+			int index = ide.tabPane.getSelectedIndex();
+			String title = ide.tabPane.getTitleAt(index);
+			if(title.endsWith("*")){
+				ide.tabPane.setTitleAt(index, title.substring(0, title.length()-1));
+			}
+			changed = false;
+			
+			
+			ide.addLRU(file.getAbsolutePath());
+			
+			return true;
+		}
+		catch(Exception e){
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public boolean actionSaveAs(){
+		ide.fileChooser.setDialogTitle("Save file");
+        int returnVal = ide.fileChooser.showSaveDialog(this);
+        if(returnVal != JFileChooser.APPROVE_OPTION) {
+        	return false;
+        }
+        	
+        File file = ide.fileChooser.getSelectedFile();
+            
+        this.file = file;
+        title = file.getName();
+        ide.tabPane.setTitleAt(ide.tabPane.getSelectedIndex(), title);
+        actionSave();
+        
+        return true;
+	}
+
+
+	
+	
+	
+	
+	public void actionFind(){	
+		editor.showFindDialog();
+	}
+
+	public void actionGoto(){	
+		editor.showGotoLineDialog();
+	}
+
+	
+	public void actionTerminate(){
+		runtime.stop();
+	}
+
+	
 	
 }

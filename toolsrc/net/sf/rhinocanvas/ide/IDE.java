@@ -19,6 +19,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.io.Writer;
 import java.lang.reflect.Method;
 import java.util.Date;
@@ -62,13 +63,24 @@ public class IDE extends JFrame {
 	class ReflectiveAction extends AbstractAction{
 
 		Method method;
+		boolean tab;
 		
 		ReflectiveAction(String label, String methodName){
 			super(label);
 			
 			try {
 				method = (IDE.class).getMethod(methodName);
-			} catch (Exception e) {
+			} catch (NoSuchMethodException e) {
+				try{
+					method = (Tab.class).getMethod(methodName);
+					tab = true;
+				}
+				catch(Exception e2){
+					throw new RuntimeException(e2);
+					
+				}
+			} catch(Exception e){
+			
 				throw new RuntimeException(e);
 			} 			
 		}
@@ -76,7 +88,7 @@ public class IDE extends JFrame {
 		
 		public void actionPerformed(ActionEvent ae) {
 			try {
-				method.invoke(IDE.this);
+				method.invoke(tab ? getCurrentTab() : IDE.this);
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			} 
@@ -379,12 +391,11 @@ public class IDE extends JFrame {
 			return true;
 		}
 		
-		properties.put("divider", ""+tab.getDividerLocation());
 
 		if(tab.changed){
 			switch(JOptionPane.showConfirmDialog(this, tab.title+" has unsaved changes. Save changes?", "Close", JOptionPane.YES_NO_CANCEL_OPTION)){
 			case JOptionPane.YES_OPTION:
-				if(actionSave()) break; //otherwise fall-through
+				if(getCurrentTab().actionSave()) break; //otherwise fall-through
 			case JOptionPane.CANCEL_OPTION:
 				return false;
 			} 
@@ -401,55 +412,6 @@ public class IDE extends JFrame {
 		return true;
 	}
 	
-	public boolean actionSave(){
-		Tab tab = getCurrentTab();
-		if(tab == null) return false;
-		
-		if(tab.file == null){
-			return actionSaveAs();
-		}
-
-		try{
-			Writer w = new FileWriter(tab.file);
-			w.write(tab.editor.getText());
-			w.close();
-			
-			int index = tabPane.getSelectedIndex();
-			String title = tabPane.getTitleAt(index);
-			if(title.endsWith("*")){
-				tabPane.setTitleAt(index, title.substring(0, title.length()-1));
-			}
-			tab.changed = false;
-			
-			
-			addLRU(tab.file.getAbsolutePath());
-			
-			return true;
-		}
-		catch(Exception e){
-			throw new RuntimeException(e);
-		}
-	}
-	
-	public boolean actionSaveAs(){
-		Tab tab = getCurrentTab();
-		if(tab == null) return false;
-		
-		fileChooser.setDialogTitle("Save file");
-        int returnVal = fileChooser.showSaveDialog(this);
-        if(returnVal != JFileChooser.APPROVE_OPTION) {
-        	return false;
-        }
-        	
-        File file = fileChooser.getSelectedFile();
-            
-        tab.file = file;
-        tab.title = file.getName();
-        tabPane.setTitleAt(tabPane.getSelectedIndex(), tab.title);
-        actionSave();
-        
-        return true;
-	}
 
 	
 	public void actionNew(){
@@ -463,6 +425,10 @@ public class IDE extends JFrame {
 		properties.put("frame-w", ""+getWidth());
 		properties.put("frame-h", ""+getHeight());
 //		properties.put("divider", ""+split.getDividerLocation());
+		
+		if(tabs.size() > 0){
+			properties.put("divider", ""+getCurrentTab().getDividerLocation());
+		}
 		
 		try{
 			properties.store(new FileOutputStream(propertyFile), ""+new Date());
@@ -481,58 +447,6 @@ public class IDE extends JFrame {
 	
 	
 	
-	public void actionRun(){
-		runNumber++;
-		Tab tab = getCurrentTab();
-		if(tab != null){
-			if(tab.file != null){
-				tab.runtime.setSource(tab.file.toURI().toString());
-			}
-			tab.runtime.exec(tab.editor.getText());
-		}
-	}
-	
-	
-	public void actionCut(){
-		if(getCurrentTab().consoleFocussed){
-			getCurrentTab().console.cut();
-		}
-		else {
-			getCurrentTab().editor.cut();
-		}
-	}
-
-	public void actionCopy(){
-		if(getCurrentTab().consoleFocussed){
-			getCurrentTab().console.copy();
-		}
-		else {
-			getCurrentTab().editor.copy();
-		}
-	}
-	
-	public void actionPaste(){
-		System.out.println("Paste");
-		if(getCurrentTab().consoleFocussed){
-			getCurrentTab().console.paste();
-		}
-		else {
-			getCurrentTab().editor.paste();
-		}
-	}
-
-	public void actionFind(){	
-		getCurrentTab().editor.showFindDialog();
-	}
-
-	public void actionGoto(){	
-		getCurrentTab().editor.showGotoLineDialog();
-	}
-
-	
-	public void actionTerminate(){
-		getCurrentTab().runtime.stop();
-	}
 	
 	public void actionAbout(){
 		
