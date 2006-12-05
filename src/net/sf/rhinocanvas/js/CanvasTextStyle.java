@@ -32,11 +32,13 @@ public class CanvasTextStyle {
 	
 	CanvasTextStyle(CanvasRenderingContext2D context, String attrs, String fontSize, String fontFamily){
 		this(context);
-		for(String attr: attrs.split(" ")){
-			if("bold".equals(attr)){
+		String[] attrArr = attrs.split(" ");
+		
+		for(int i = 0; i < attrArr.length; i++){
+			if("bold".equals(attrArr[i])){
 				fontWeight = "bold";
 			}
-			else if("italic".equals(attr)){
+			else if("italic".equals(attrArr[i])){
 				fontVariant = "italic";
 			}
 		}

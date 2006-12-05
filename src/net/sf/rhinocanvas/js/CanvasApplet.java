@@ -1,29 +1,16 @@
 package net.sf.rhinocanvas.js;
 
-import java.applet.Applet;
-import java.awt.Graphics;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.image.BufferedImage;
+
 import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
+
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
-import java.net.MalformedURLException;
+
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 
 import javax.swing.JApplet;
 
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.NativeObject;
-import org.mozilla.javascript.ScriptableObject;
-
-import com.sun.jndi.toolkit.url.UrlUtil;
 
 import net.sf.rhinocanvas.rt.RhinoRuntime;
 
@@ -55,7 +42,7 @@ public class CanvasApplet extends JApplet {
 	
 	public void start(){
 		
-		StringBuilder sb = new StringBuilder();
+		StringBuffer sb = new StringBuffer();
 		try {
 			runtime.setSource(scriptUrl);
 

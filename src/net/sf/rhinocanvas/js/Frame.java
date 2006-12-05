@@ -30,7 +30,7 @@ import org.mozilla.javascript.ScriptableObject;
 
 public class Frame extends Component {
 	
-	boolean macOS = System.getProperty("mrj.version") != null;
+//	boolean macOS = System.getProperty("mrj.version") != null;
 	RootPaneContainer container;
 	JFrame frame;
 	JApplet applet;
