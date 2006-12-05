@@ -1,15 +1,19 @@
 package net.sf.rhinocanvas.rt;
 
+import java.io.PrintWriter;
+import java.io.Writer;
 import java.util.Hashtable;
 
 import javax.swing.text.JTextComponent;
+
+import net.sf.rhinocanvas.ide.ConsoleTextArea;
 
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ImporterTopLevel;
 import org.mozilla.javascript.Scriptable;
 
-public class RhinoRuntime implements Runtime {
+public class RhinoRuntime implements ScriptRuntime {
 
 	Hashtable intervals = new Hashtable();
 	private int intervalId;
@@ -18,6 +22,7 @@ public class RhinoRuntime implements Runtime {
 	String currentUrl;
 	ConsoleTextArea console;
 	Scriptable scope;
+	PrintWriter writer;
 	
 	public Scriptable getScope(){
 		return scope;
@@ -113,23 +118,23 @@ public class RhinoRuntime implements Runtime {
 	}
 	
 	public Object exec(String expression) {
-		runNumber++;
+		//runNumber++;
 
 		return new RhinoScriptRunner(this, expression).run(Context.enter());
 	}
 
-	public JTextComponent getConsole(){
-		if(console == null){
-			ConsoleTextArea console	= new ConsoleTextArea(new String[0]);
-//			Main.setIn(console.getIn());
-//			Main.setOut(console.getOut());
-//			Main.setErr(console.getErr());
-			console.setRows(24);
-			console.setColumns(80);
-			
-		}
-		return console;
-	}
+//	public JTextComponent getConsole(){
+//		if(console == null){
+//			ConsoleTextArea console	= new ConsoleTextArea(new String[0]);
+////			Main.setIn(console.getIn());
+////			Main.setOut(console.getOut());
+////			Main.setErr(console.getErr());
+//			console.setRows(24);
+//			console.setColumns(80);
+//			
+//		}
+//		return console;
+//	}
 	
 	
 	public int getLineNumber() {
@@ -140,6 +145,10 @@ public class RhinoRuntime implements Runtime {
 	public void stop() {
 		runNumber++;
 		intervals = new Hashtable();
+	}
+
+	public void setOutput(PrintWriter writer) {
+		this.writer = writer;
 	}
 
 }

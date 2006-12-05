@@ -4,6 +4,7 @@
 package net.sf.rhinocanvas.rt;
 
 import java.io.PrintStream;
+import java.io.PrintWriter;
 
 
 import org.mozilla.javascript.Context;
@@ -35,6 +36,8 @@ class RhinoScriptRunner implements ContextAction, Runnable {
 	
 	
 	public Object run(Context cx) {
+		
+		try{
 		
 		cx.putThreadLocal("runtime", runtime);
 		
@@ -68,5 +71,11 @@ class RhinoScriptRunner implements ContextAction, Runnable {
 			 Function fn = (Function) script;
 			 return fn.call(cx, fn, fn, new Object[0]);
 		 }
+		 
+		}
+		catch(Exception e){
+			e.printStackTrace(runtime.writer);
+			return e;
+		}
 	 }
 }
