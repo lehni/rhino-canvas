@@ -21,7 +21,6 @@ import java.awt.geom.Rectangle2D;
 import java.awt.image.ImageObserver;
 import java.util.Stack;
 
-import sun.rmi.runtime.GetThreadPoolAction;
 
 import net.sf.css4j.Value;
 
@@ -367,7 +366,7 @@ public class CanvasRenderingContext2D {
 	  // path API
 	  public void beginPath(){
 		  path = new GeneralPath();
-		  moveTo(0,0);
+		//  moveTo(0,0);
 	  }
 	  
 	  public void closePath(){
