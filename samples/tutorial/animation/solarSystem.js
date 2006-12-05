@@ -45,6 +45,6 @@ function draw() {
   ctx.drawImage(sun,0,0);
 }
 
-canvas = new Image(300, 300);
-new Frame("Solar System", canvas);
+//canvas = new Image(300, 300);
+//new Frame("Solar System", canvas);
 init();
