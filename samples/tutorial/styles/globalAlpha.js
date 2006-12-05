@@ -25,5 +25,5 @@ function draw() {
 }
 
 canvas = new Image(150,150);
-window = new Window("Global Alpha", canvas);
+window = new Frame("Global Alpha", canvas);
 draw();

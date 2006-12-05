@@ -17,5 +17,5 @@ function draw() {
 
 
 canvas = new Image(150,150);
-window = new Window("Line Cap", canvas);
+window = new Frame("Line Cap", canvas);
 draw();

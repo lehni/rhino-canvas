@@ -4,7 +4,7 @@
 // globals
 //playarea_canvas = document.getElementById('playarea');
 playarea_canvas = new Image(320, 200);
-window = new Window("Pong", playarea_canvas);
+window = new Frame("Pong", playarea_canvas);
 
 
 playarea = playarea_canvas.getContext('2d');
