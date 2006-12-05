@@ -48,7 +48,7 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.text.JTextComponent;
 
 import net.sf.rhinocanvas.rt.RhinoRuntime;
-import net.sf.rhinocanvas.rt.Runtime;
+import net.sf.rhinocanvas.rt.ScriptRuntime;
 
 import org.ujac.ui.editor.CaretPositionEvent;
 import org.ujac.ui.editor.CaretPositionListener;
@@ -57,9 +57,8 @@ import org.ujac.ui.editor.CaretPositionListener;
 public class IDE extends JFrame {
 	
 	static int runNumber;
-	Runtime runtime = new RhinoRuntime();
-	JTextComponent console = new JTextArea(); // runtime.getConsole();
-	
+
+
 	class ReflectiveAction extends AbstractAction{
 
 		Method method;
@@ -95,7 +94,6 @@ public class IDE extends JFrame {
 	}
 
 	
-	boolean consoleFocussed;
 	boolean macOS = System.getProperty("mrj.version") != null;
 	File propertyFile = new File(System.getProperty("user.home"), ".rhino-canvas-ide.ini");
 	Vector tabs = new Vector();
@@ -104,7 +102,7 @@ public class IDE extends JFrame {
 	JFileChooser fileChooser = new JFileChooser();
 	JLabel status = new JLabel();
 	
-	JSplitPane split = new JSplitPane(JSplitPane.VERTICAL_SPLIT, tabPane, new JScrollPane(console));
+	
 	Properties properties = new Properties();
 
 	
@@ -201,26 +199,14 @@ public class IDE extends JFrame {
 		
 		setJMenuBar(menuBar);
 		
+		getContentPane().add(tabPane);
+		
 		addTab(null);
 //		addTab(new File("/home/haustein/eclipse/rhino-canvas/samples/simple.js"));
         
-        console.addFocusListener(new FocusListener(){
-
-			public void focusGained(FocusEvent arg0) {
-				consoleFocussed = true;
-			}
-
-			public void focusLost(FocusEvent arg0) {
-				consoleFocussed = false;
-			}
-        	
-        });
-        
-		Container content = getContentPane();
-		content.add(split);
-//		JPanel statusPanel = new JPanel(new FlowLayout());
-//		statusPanel.add(status);
-		content.add(BorderLayout.SOUTH, status);
+       
+//		Container content = getContentPane();
+		
 		
 		if(properties.getProperty("frame-x") != null){
 		
@@ -231,15 +217,13 @@ public class IDE extends JFrame {
 					Integer.parseInt(properties.getProperty("frame-w", "640")), 
 					Integer.parseInt(properties.getProperty("frame-h", "480")));
 			
-			split.setDividerLocation(
-					Integer.parseInt(properties.getProperty("divider", "350")));
+//			split.setDividerLocation(
+//					Integer.parseInt(properties.getProperty("divider", "350")));
 			
 			validate();
 		}
 		else {
 			pack();
-		
-			split.setDividerLocation(0.67);
 		}
 		fileChooser.setFileFilter(new FileFilter(){
 
@@ -295,9 +279,9 @@ public class IDE extends JFrame {
 
 
 	private void addTab(File file) {
-		Tab tab = new Tab(file);
+		Tab tab = new Tab(this, file);
 		tabs.add(tab);
-		tabPane.add(tab.title, new JScrollPane(tab.editor));
+		tabPane.add(tab.title, tab);
 		tabPane.setSelectedIndex(tabs.size()-1);
 		
 		
@@ -394,6 +378,8 @@ public class IDE extends JFrame {
 		if(tab == null){
 			return true;
 		}
+		
+		properties.put("divider", ""+tab.getDividerLocation());
 
 		if(tab.changed){
 			switch(JOptionPane.showConfirmDialog(this, tab.title+" has unsaved changes. Save changes?", "Close", JOptionPane.YES_NO_CANCEL_OPTION)){
@@ -476,7 +462,7 @@ public class IDE extends JFrame {
 		properties.put("frame-y", ""+getY());
 		properties.put("frame-w", ""+getWidth());
 		properties.put("frame-h", ""+getHeight());
-		properties.put("divider", ""+split.getDividerLocation());
+//		properties.put("divider", ""+split.getDividerLocation());
 		
 		try{
 			properties.store(new FileOutputStream(propertyFile), ""+new Date());
@@ -500,16 +486,16 @@ public class IDE extends JFrame {
 		Tab tab = getCurrentTab();
 		if(tab != null){
 			if(tab.file != null){
-				runtime.setSource(tab.file.toURI().toString());
+				tab.runtime.setSource(tab.file.toURI().toString());
 			}
-			runtime.exec(tab.editor.getText());
+			tab.runtime.exec(tab.editor.getText());
 		}
 	}
 	
 	
 	public void actionCut(){
-		if(consoleFocussed){
-			console.cut();
+		if(getCurrentTab().consoleFocussed){
+			getCurrentTab().console.cut();
 		}
 		else {
 			getCurrentTab().editor.cut();
@@ -517,8 +503,8 @@ public class IDE extends JFrame {
 	}
 
 	public void actionCopy(){
-		if(consoleFocussed){
-			console.copy();
+		if(getCurrentTab().consoleFocussed){
+			getCurrentTab().console.copy();
 		}
 		else {
 			getCurrentTab().editor.copy();
@@ -527,8 +513,8 @@ public class IDE extends JFrame {
 	
 	public void actionPaste(){
 		System.out.println("Paste");
-		if(consoleFocussed){
-			console.paste();
+		if(getCurrentTab().consoleFocussed){
+			getCurrentTab().console.paste();
 		}
 		else {
 			getCurrentTab().editor.paste();
@@ -545,7 +531,7 @@ public class IDE extends JFrame {
 
 	
 	public void actionTerminate(){
-		runtime.stop();
+		getCurrentTab().runtime.stop();
 	}
 	
 	public void actionAbout(){

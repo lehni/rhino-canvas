@@ -15,7 +15,7 @@ public class RhinoCanvasIDE {
 			UIManager.setLookAndFeel(
 					UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {
-		}
+		} 
 		new IDE();
 	}
 
