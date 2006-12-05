@@ -69,10 +69,10 @@ public class IDE extends JFrame {
 			super(label);
 			
 			try {
-				method = (IDE.class).getMethod(methodName);
+				method = (IDE.class).getMethod(methodName, null);
 			} catch (NoSuchMethodException e) {
 				try{
-					method = (Tab.class).getMethod(methodName);
+					method = (Tab.class).getMethod(methodName, null);
 					tab = true;
 				}
 				catch(Exception e2){
@@ -88,7 +88,7 @@ public class IDE extends JFrame {
 		
 		public void actionPerformed(ActionEvent ae) {
 			try {
-				method.invoke(tab ? getCurrentTab() : IDE.this);
+				method.invoke(tab ? (Object) getCurrentTab() : IDE.this, null);
 			} catch (Exception e) {
 				throw new RuntimeException(e);
 			} 

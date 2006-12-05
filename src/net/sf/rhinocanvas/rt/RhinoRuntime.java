@@ -1,12 +1,10 @@
 package net.sf.rhinocanvas.rt;
 
 import java.io.PrintWriter;
-import java.io.Writer;
+
 import java.util.Hashtable;
 
-import javax.swing.text.JTextComponent;
 
-import net.sf.rhinocanvas.ide.ConsoleTextArea;
 
 import org.mozilla.javascript.Callable;
 import org.mozilla.javascript.Context;
@@ -20,7 +18,7 @@ public class RhinoRuntime implements ScriptRuntime {
 
 	int runNumber;
 	String currentUrl;
-	ConsoleTextArea console;
+
 	Scriptable scope;
 	PrintWriter writer;
 	
