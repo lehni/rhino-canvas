@@ -20,9 +20,12 @@ import javax.swing.JFileChooser;
 import javax.swing.JScrollPane;
 import javax.swing.JSplitPane;
 
+import net.sf.rhinocanvas.js.Image;
 import net.sf.rhinocanvas.rt.RhinoRuntime;
 
 import org.ujac.ui.editor.TextArea;
+
+import com.sun.org.apache.bcel.internal.verifier.structurals.Frame;
 
 
 public class Tab extends JSplitPane {
@@ -127,6 +130,9 @@ public class Tab extends JSplitPane {
 				}
 	        	
 	        });
+		 
+		 
+		 runtime.defineProperty("document", new net.sf.rhinocanvas.js.Frame(title, new Image(320, 240)));
 		 
 		 runtime.setOutput(new PrintWriter(console.getOut()));
 		new Thread(new ConsoleHandler(console)).start();

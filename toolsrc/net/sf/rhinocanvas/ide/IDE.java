@@ -38,18 +38,11 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JSplitPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
 import javax.swing.KeyStroke;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileFilter;
-import javax.swing.text.JTextComponent;
-
-import net.sf.rhinocanvas.rt.RhinoRuntime;
-import net.sf.rhinocanvas.rt.ScriptRuntime;
 
 import org.ujac.ui.editor.CaretPositionEvent;
 import org.ujac.ui.editor.CaretPositionListener;

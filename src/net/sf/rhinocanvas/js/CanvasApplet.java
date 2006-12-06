@@ -28,7 +28,7 @@ public class CanvasApplet extends JApplet {
 	public void init(){
 		runtime = new RhinoRuntime();
 		window = new Frame(this);
-		runtime.defineProperty("canvas", window.content);
+		runtime.defineProperty("document", window);
 
 		URI base;
 		try {

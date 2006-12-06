@@ -4,10 +4,6 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
@@ -19,14 +15,15 @@ import javax.swing.JPanel;
 import javax.swing.RootPaneContainer;
 
 import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Function;
-import org.mozilla.javascript.NativeObject;
-import org.mozilla.javascript.ScriptableObject;
 
 
 /*
  * Created on 28/10/2006 by Stefan Haustein
  */
+
+
+/** Applet or Frame. Should behave like document to some extent. The variable document should initially
+ * point to a Frame instance. */
 
 public class Frame extends Component {
 	
@@ -118,9 +115,9 @@ public class Frame extends Component {
 		});
 	    	
 	    frame.pack();
-	    frame.setVisible(true);
+	 //   frame.setVisible(true);
 	    	
-	    frame.requestFocus();
+	 //   frame.requestFocus();
 		frame.requestFocusInWindow();
 
 	    frame.setResizable(false);
@@ -137,6 +134,13 @@ public class Frame extends Component {
 		 }
 	 }
 	 
+	 public Object getElementById(String id){
+		 if(frame != null && !frame.isVisible()){
+			 frame.show();
+			 frame.requestFocus();
+		 }
+		 return content;
+	 }
 	 
 	 
 	 public Object getContent(){
