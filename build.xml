@@ -1,6 +1,6 @@
 <project name="rhino-canvas" basedir="." default="build" >
 
-  <property name="version" value="0.32" />	
+  <property name="version" value="0.40" />	
 	
   <target name="init">
   	<delete dir="tmpclasses" />
@@ -28,6 +28,8 @@
   		excludes="org/mozilla/javascript/optimizer/*"
     	manifest="toolsrc/META-INF/manifest.mf"
      />
+     
+     <copy file="dist/rhino-canvas-applet.jar" todir="www" />
 
   </target>
 	
@@ -54,27 +56,26 @@
 	
 	
   <target name="package" depends="build-ide" >
-  	<mkdir dir="dist/rhino-canvas-ide-${version}"/>
-  	<copydir dest="dist/rhino-canvas-ide-${version}/samples" src="samples"></copydir>
-  	<copy file="dist/rhino-canvas-ide.jar" todir="dist/rhino-canvas-ide-${version}" />
-  	<copy file="dist/rhino-canvas-applet.jar" todir="dist/rhino-canvas-ide-${version}" />
-  	
-  	
-  <echo append="false" file="dist/rhino-canvas-ide-${version}/ide.cmd">java -jar rhino-canvas-ide-${version}.jar
+  	<mkdir dir="dist/rhino-canvas-${version}"/>
+  	<copydir dest="dist/rhino-canvas-${version}/samples" src="samples" excludes=".*">
+  	</copydir>
+  	<copy file="dist/rhino-canvas-ide.jar" todir="dist/rhino-canvas-${version}" />
+  	<copy file="dist/rhino-canvas-applet.jar" todir="dist/rhino-canvas-${version}" />
+  	 	
+    <echo append="false" file="dist/rhino-canvas-${version}/ide.cmd">java -jar rhino-canvas-ide.jar
 </echo>
-  	
-    <echo append="false" file="dist/rhino-canvas-ide-${version}/ide.sh">java -jar rhino-canvas-ide-${version}.jar
+    <echo append="false" file="dist/rhino-canvas-${version}/ide.sh">java -jar rhino-canvas-ide.jar
 </echo>
 
   	
-  	<zip destfile="dist/rhino-canvas-ide-${version}.zip"> 
+  	<zip destfile="dist/rhino-canvas-${version}.zip"> 
 		<fileset dir="dist" >
-			<include name="rhino-canvas-ide-${version}/**" />
+			<include name="rhino-canvas-${version}/**" />
 		</fileset>
 		
   	</zip>
   
-  	<deltree dir="dist/rhino-canvas-ide-${version}"/>
+  	<deltree dir="dist/rhino-canvas-ide-${version}"/> 
   	
   </target>
 	
