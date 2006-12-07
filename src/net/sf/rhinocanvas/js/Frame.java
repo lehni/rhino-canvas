@@ -34,7 +34,7 @@ public class Frame extends Component {
 	Helper helper;
 	Image content;
 	Context context;
-	
+	boolean firstCall = true;
 	
 	class Helper extends JPanel{
 		
@@ -119,8 +119,6 @@ public class Frame extends Component {
 	    	
 	 //   frame.requestFocus();
 		frame.requestFocusInWindow();
-
-	    frame.setResizable(false);
 	}
 	  
 	 void dirty(){
@@ -135,8 +133,9 @@ public class Frame extends Component {
 	 }
 	 
 	 public Object getElementById(String id){
-		 if(frame != null && !frame.isVisible()){
-			 frame.show();
+		 if(frame != null && firstCall){
+			 firstCall = false;
+			 frame.setVisible(true);
 			 frame.requestFocus();
 		 }
 		 return content;

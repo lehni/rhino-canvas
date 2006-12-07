@@ -116,11 +116,9 @@ function step(){
   setTimeout("step()", 1000);
 }
 
-if(!canvas){
-canvas = new Image(200, 200);
-window = new Window("Game of Life", canvas);
-window.setResizable(true);
-}
+
+canvas = document.getElementById("canvas");
+
 cs = new ConwaySimulation(20, 20);
 step();
 

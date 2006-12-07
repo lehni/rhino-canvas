@@ -10,9 +10,8 @@ function init(){
 }
 
 function draw() {
-  //var ctx = document.getElementById('canvas').getContext('2d');
-  var ctx = canvas.getContext('2d');
-
+  var ctx = document.getElementById('canvas').getContext('2d');
+ 
   ctx.globalCompositeOperation = 'destination-over';
   ctx.clearRect(0,0,300,300); // clear canvas
 
@@ -45,6 +44,5 @@ function draw() {
   ctx.drawImage(sun,0,0);
 }
 
-//canvas = new Image(300, 300);
-//new Frame("Solar System", canvas);
+
 init();

@@ -4,8 +4,7 @@ function init(){
 }
 function clock(){
   var now = new Date();
-//  var ctx = document.getElementById('canvas').getContext('2d');
-  var ctx = canvas.getContext('2d');
+  var ctx = document.getElementById('canvas').getContext('2d');
   ctx.save();
   ctx.clearRect(0,0,150,150);
   ctx.translate(75,75);
@@ -99,9 +98,5 @@ function clock(){
 }
 
 
-
-
-//canvas = new Image(150, 150);
-//new Frame("Clock", canvas);
 init();
 
