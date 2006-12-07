@@ -176,6 +176,7 @@ public class Tab extends JSplitPane {
 		}
 		PrintWriter pw = new PrintWriter(console.getOut());
 		try{
+			runtime.stop(); // inc run number
 			pw.write(runtime.exec(editor.getText())+"\n>");
 		}
 		catch(Exception e){

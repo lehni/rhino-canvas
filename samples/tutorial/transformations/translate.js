@@ -1,6 +1,5 @@
 function draw() {
-  //var ctx = document.getElementById('canvas').getContext('2d');
-  var ctx = canvas.getContext('2d');
+  var ctx = document.getElementById('canvas').getContext('2d');
   ctx.fillRect(0,0,300,300);
   for (var i=0;i<3;i++) {
     for (var j=0;j<3;j++) {
@@ -31,6 +30,4 @@ function drawSpirograph(ctx,R,r,O){
 }
 
 
-canvas = new Image(150,150);
-window = new Window("Save/Restore", canvas);
 draw();

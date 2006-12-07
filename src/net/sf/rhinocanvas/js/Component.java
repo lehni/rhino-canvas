@@ -29,7 +29,7 @@ public class Component {
 		public void mouseExited(MouseEvent arg0) {}
 		public void mouseReleased(MouseEvent arg0) {}
 		public void mousePressed(MouseEvent arg0) {
-			System.out.println("Requesting the damn focus");
+		//	System.out.println("Requesting the damn focus");
 			awtComponent.requestFocus();
 		}
 		
@@ -59,7 +59,7 @@ public class Component {
 		}
 
 		public void keyTyped(KeyEvent ke) {
-			System.out.println("typed Keycode: "+ke.getKeyCode()+" char: "+ke.getKeyChar());
+	//		System.out.println("typed Keycode: "+ke.getKeyCode()+" char: "+ke.getKeyChar());
 		}
 		
 	}

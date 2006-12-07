@@ -1,6 +1,5 @@
 function draw() {
-  //var ctx = document.getElementById('canvas').getContext('2d');
-  var ctx = canvas.getContext('2d');
+  var ctx = document.getElementById('canvas').getContext('2d');
   ctx.translate(75,75);
 
   for (i=1;i<6;i++){ // Loop through rings (from inside to out)
@@ -18,7 +17,4 @@ function draw() {
   }
 }
 
-
-canvas = new Image(150,150);
-window = new Window("Rotate", canvas);
 draw();

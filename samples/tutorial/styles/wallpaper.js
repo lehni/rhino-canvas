@@ -1,7 +1,5 @@
 function draw() {
- // var ctx = document.getElementById('canvas').getContext('2d');
-  var ctx = canvas.getContext('2d');
-
+  var ctx = document.getElementById('canvas').getContext('2d');
 
   // create new image object to use as pattern
   var img = new Image();
@@ -16,7 +14,4 @@ function draw() {
   }
 }
 
-
-canvas = new Image(150,150);
-window = new Window("Wallpaper", canvas);
 draw();

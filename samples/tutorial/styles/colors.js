@@ -3,8 +3,7 @@
 
 
 function draw() {
-//  var ctx = document.getElementById('canvas').getContext('2d');
-  var ctx = canvas.getContext("2D");
+  var ctx = document.getElementById('canvas').getContext('2d');
   for (i=0;i<6;i++){
     for (j=0;j<6;j++){
       ctx.fillStyle = 'rgb(' + Math.floor(255-42.5*i) + ',' + 
@@ -14,6 +13,4 @@ function draw() {
   }
 }
 
-canvas = new Image(150,150);
-new Window("Colors", canvas);
 draw();

@@ -1,9 +1,6 @@
-canvas = new Image(150,150);
-window = new Window("simple", canvas);
-
 
 function draw() {
-    var ctx = canvas.getContext('2d');
+    var ctx = document.getElementById('canvas').getContext('2d');
     for (i=0;i<6;i++){
       for (j=0;j<6;j++){
         ctx.strokeStyle = 'rgb(0,' + Math.floor(255-42.5*i) + ',' + 

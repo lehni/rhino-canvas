@@ -1,7 +1,7 @@
 
 
 function draw() {
-  var ctx = canvas.getContext('2d');
+  var ctx = document.getElementById('canvas').getContext('2d');
   // draw background
   ctx.fillStyle = '#FD0';
   ctx.fillRect(0,0,75,75);
@@ -24,6 +24,4 @@ function draw() {
   }
 }
 
-canvas = new Image(150,150);
-window = new Frame("Global Alpha", canvas);
 draw();

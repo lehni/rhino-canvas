@@ -1,7 +1,7 @@
 // source:
 
 function draw() {
-  //var ctx = document.getElementById('canvas').getContext('2d');
+  var ctx = document.getElementById('canvas').getContext('2d');
   var ctx = canvas.getContext('2d');
 
   // Draw background
@@ -24,7 +24,5 @@ function draw() {
 }
 
 
-canvas = new Image(150,150);
-new Window("rgba", canvas);
 draw();
 

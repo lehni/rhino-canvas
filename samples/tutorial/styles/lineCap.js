@@ -1,6 +1,5 @@
 function draw() {
- // var ctx = document.getElementById('canvas').getContext('2d');
-  var ctx = canvas.getContext('2d');
+  var ctx = document.getElementById('canvas').getContext('2d');
   var lineJoin = ['round','bevel','miter'];
   ctx.lineWidth = 10;
   for (i=0;i<lineJoin.length;i++){
@@ -16,6 +15,4 @@ function draw() {
 }
 
 
-canvas = new Image(150,150);
-window = new Frame("Line Cap", canvas);
 draw();

@@ -16,7 +16,7 @@ public class RhinoRuntime implements ScriptRuntime {
 	Hashtable intervals = new Hashtable();
 	private int intervalId;
 
-	int runNumber;
+	public int runNumber;
 	String currentUrl;
 
 	Scriptable scope;

@@ -1,8 +1,7 @@
 miterLimit = 10;
 
 function draw() {
-      //  var ctx = document.getElementById('canvas').getContext('2d');
-  var ctx = canvas.getContext('2d');
+  var ctx = document.getElementById('canvas').getContext('2d');
 
         // Clear canvas
   ctx.clearRect(0,0,150,150);
@@ -29,8 +28,5 @@ function draw() {
   return false;
 }
 
-
-canvas = new Image(150,150);
-window = new Window("simple", canvas);
 
 draw();

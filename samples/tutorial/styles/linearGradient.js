@@ -1,8 +1,7 @@
 
 
 function draw() {
-//  var ctx = document.getElementById('canvas').getContext('2d');
-  var ctx = canvas.getContext('2d');
+  var ctx = document.getElementById('canvas').getContext('2d');
 
   // Create gradients
   var lingrad = ctx.createLinearGradient(0,0,0,150);
@@ -25,6 +24,4 @@ function draw() {
 
 }
 
-canvas = new Image(150,150);
-window = new Window("Linear Gradient", canvas);
 draw();

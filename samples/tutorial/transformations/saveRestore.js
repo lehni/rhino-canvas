@@ -1,7 +1,5 @@
 function draw() {
-  //var ctx = document.getElementById('canvas').getContext('2d');
-  var ctx = canvas.getContext('2d');
-
+  var ctx = document.getElementById('canvas').getContext('2d');
 
   ctx.fillRect(0,0,150,150);   //  draw a rectangle with default settings
   ctx.save();                  //  Save the default state
@@ -21,7 +19,4 @@ function draw() {
   ctx.fillRect(60,60,30,30);   // Draw a rectangle with restored settings
 }
 
-
-canvas = new Image(150,150);
-window = new Window("Save/Restore", canvas);
 draw();

@@ -14,6 +14,8 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.RootPaneContainer;
 
+import net.sf.rhinocanvas.rt.RhinoRuntime;
+
 import org.mozilla.javascript.Context;
 
 
@@ -34,7 +36,7 @@ public class Frame extends Component {
 	Helper helper;
 	Image content;
 	Context context;
-	boolean firstCall = true;
+	int run = -1;
 	
 	class Helper extends JPanel{
 		
@@ -133,8 +135,10 @@ public class Frame extends Component {
 	 }
 	 
 	 public Object getElementById(String id){
-		 if(frame != null && firstCall){
-			 firstCall = false;
+		 RhinoRuntime runtime = (RhinoRuntime) Context.getCurrentContext().getThreadLocal("runtime");
+
+		 if(frame != null && run != runtime.runNumber){
+			 run = runtime.runNumber;
 			 frame.setVisible(true);
 			 frame.requestFocus();
 		 }

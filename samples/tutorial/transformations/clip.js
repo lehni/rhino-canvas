@@ -1,6 +1,5 @@
 function draw() {
-  //var ctx = document.getElementById('canvas').getContext('2d');
-  var ctx = canvas.getContext('2d');
+  var ctx = document.getElementById('canvas').getContext('2d');
  
   ctx.fillRect(0,0,150,150);
   ctx.translate(75,75);
@@ -46,7 +45,4 @@ function drawStar(ctx,r){
   ctx.restore();
 }
 
-
-canvas = new Image(150,150);
-window = new Window("Clip", canvas);
 draw();

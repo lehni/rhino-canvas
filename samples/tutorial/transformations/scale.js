@@ -1,6 +1,5 @@
 function draw() {
-  //var ctx = document.getElementById('canvas').getContext('2d');
-  var ctx = canvas.getContext('2d');
+  var ctx = document.getElementById('canvas').getContext('2d');
   ctx.strokeStyle = "#fc0";
   ctx.lineWidth = 1.5;
   ctx.fillRect(0,0,300,300);
@@ -54,9 +53,6 @@ function draw() {
 }
 
 
-
-canvas = new Image(300,300);
-window = new Window("Scale", canvas);
 draw();
 
 
